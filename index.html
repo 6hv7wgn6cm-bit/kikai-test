@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://cdn.jsdelivr.net https://unpkg.com https://storage.googleapis.com; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none';">
+<title>器械分解ナビ</title>
+<style>
+
+:root{
+  --ink:#2f3437;--text:#27323a;--sub:#6f7d86;--muted:#97a5ad;
+  --mint:#2eb7a5;--mint2:#42cdbf;--mint-dark:#159d8d;--mint-soft:#e8f8f5;
+  --blue:#2792d6;--blue-soft:#ebf7ff;--yellow:#f8c84e;--yellow-soft:#fff9df;--pink:#ef7f93;--pink-soft:#fff0f3;
+  --green:#29b472;--green-soft:#e8f8ef;--line:#e4eef1;--line2:#edf4f6;--card:#fff;
+  --danger:#e55757;--danger-soft:#fff1f1;--shadow:0 11px 28px rgba(67,99,111,.11),0 2px 8px rgba(67,99,111,.06);
+  --soft-shadow:0 7px 20px rgba(67,99,111,.075);--radius:22px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:#fff}
+body{
+  color:var(--text);font-family:"Hiragino Maru Gothic ProN","Yu Gothic","Hiragino Sans","Noto Sans JP",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.55;letter-spacing:.005em;padding-bottom:env(safe-area-inset-bottom);
+  background:
+    radial-gradient(circle at 15% 1%, rgba(46,183,165,.13) 0 2px, transparent 3px) 0 0/28px 28px,
+    radial-gradient(circle at 96% 8%, rgba(46,183,165,.12), transparent 24%),
+    radial-gradient(circle at 5% 92%, rgba(66,205,191,.20), transparent 30%),
+    linear-gradient(180deg,#fff 0%,#fbfefd 52%,#effbf8 100%);
+}
+body::before{content:"";position:fixed;left:-70px;bottom:-120px;width:360px;height:300px;background:#dff7f2;border-radius:50% 50% 0 0/70% 70% 0 0;opacity:.75;z-index:-1}
+body::after{content:"";position:fixed;right:-130px;bottom:8%;width:330px;height:260px;background:#e4f8f4;border-radius:55% 45% 0 0/80% 70% 0 0;opacity:.65;z-index:-1}
+.tnum{font-variant-numeric:tabular-nums}
+.app{width:min(100%,392px);min-height:100dvh;margin:0 auto;background:#fff;display:flex;flex-direction:column;position:relative;overflow:hidden}
+@media (min-width:700px){body{padding:26px}.app{min-height:calc(100dvh - 52px);border:1px solid rgba(220,234,238,.85);border-radius:36px;box-shadow:0 24px 70px rgba(62,88,98,.14),0 2px 8px rgba(62,88,98,.05)}}
+header.bar{display:none}
+.screen{display:none;flex:1;flex-direction:column;min-height:100dvh;padding:14px 18px 18px;background:linear-gradient(180deg,#fff 0%,#fff 74%,#f4fcfa 100%);position:relative;overflow-y:auto}
+@media (min-width:700px){.screen{min-height:calc(100dvh - 52px)}}
+.screen.active{display:flex;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.screen::after{content:"";position:absolute;right:-95px;top:185px;width:180px;height:210px;border-radius:90px;background:linear-gradient(180deg,rgba(225,246,250,.72),rgba(225,246,250,.15));z-index:0}
+.screen>*{position:relative;z-index:1}
+.statusbar{height:24px;display:flex;align-items:center;justify-content:space-between;margin:0 0 9px;color:#111820;font-size:12px;font-weight:900;letter-spacing:-.02em;flex:0 0 auto}
+.status-icons{display:flex;align-items:center;gap:5px}.signal{display:inline-flex;align-items:flex-end;gap:2px;height:11px}.signal i{display:block;width:3px;border-radius:2px;background:currentColor}.signal i:nth-child(1){height:4px}.signal i:nth-child(2){height:6px}.signal i:nth-child(3){height:8px}.signal i:nth-child(4){height:10px}.wifi{width:13px;height:10px;border:2px solid currentColor;border-left-color:transparent;border-right-color:transparent;border-bottom-color:transparent;border-radius:12px 12px 0 0;transform:translateY(1px)}.battery{width:19px;height:10px;border:1.8px solid currentColor;border-radius:3px;position:relative}.battery:after{content:"";position:absolute;right:-3.4px;top:2px;width:2px;height:4px;background:currentColor;border-radius:1px}.battery:before{content:"";position:absolute;left:2px;top:2px;width:11px;height:4px;background:currentColor;border-radius:1px}
+.appbar{height:42px;display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:6px;margin-bottom:12px;flex:0 0 auto}
+.appbar strong{text-align:center;font-size:16px;font-weight:900;letter-spacing:-.03em;color:#2d3439}
+.nav-icon{appearance:none;border:none;background:transparent;color:#30373b;width:36px;height:36px;border-radius:15px;display:grid;place-items:center;cursor:pointer;padding:7px}
+.nav-icon:active{background:#f0f7f7;transform:scale(.98)}.nav-icon svg{width:22px;height:22px}
+.back{display:none}
+/* Home */
+.home-screen{padding-top:14px}
+.home-screen::after{right:-80px;top:205px;width:160px;height:190px;background:#e8f6ff}
+.hello-card{display:grid;grid-template-columns:1fr 105px;align-items:center;min-height:106px;border:1px solid var(--line);border-radius:20px;background:#fff;padding:14px 12px 12px 17px;margin:2px 0 12px;box-shadow:var(--soft-shadow);overflow:hidden}
+.hello-card::after{content:"";position:absolute;right:-38px;bottom:-62px;width:155px;height:135px;background:#e7f7f4;border-radius:50%;opacity:.72}
+.hello-card b{display:block;color:var(--mint-dark);font-size:21px;letter-spacing:.05em;font-weight:950;line-height:1.12;margin-bottom:7px}
+.hello-card p{margin:0;color:#2e383e;font-size:12px;line-height:1.65;font-weight:700}
+.character-wrap{align-self:end;justify-self:end;width:105px;height:92px;overflow:hidden;display:flex;align-items:flex-end;justify-content:center;position:relative;z-index:1}
+.reference-character{width:96px;height:auto;display:block;mix-blend-mode:multiply;transform:translateY(5px)}
+.home-title,.hero{display:none!important}
+.menu{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
+.tile{appearance:none;border:1px solid var(--line);background:#fff;border-radius:18px;min-height:142px;padding:18px 10px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;cursor:pointer;box-shadow:var(--soft-shadow);position:relative;overflow:hidden}
+.tile:active{transform:scale(.985)}
+.tile .ico{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;color:var(--mint);background:var(--mint-soft);box-shadow:inset 0 0 0 1px rgba(46,183,165,.09)}
+.tile .ico svg{width:33px;height:33px;stroke-width:3.2}
+.tile h2{margin:0;font-size:17px;font-weight:950;letter-spacing:-.03em;color:#253038}
+.tile small{display:block;color:#4f5c63;font-size:11px;font-weight:700;line-height:1.55;max-width:124px}
+.tile .chev{position:absolute;right:12px;bottom:12px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:1px solid currentColor;font-size:18px;line-height:1;background:#fff;font-weight:800}
+.tile-camera .ico,.tile-camera .chev{color:var(--mint)}.tile-book .ico,.tile-book .chev{color:#f2b900;background:var(--yellow-soft)}.tile-folder .ico,.tile-folder .chev{color:var(--blue);background:var(--blue-soft)}.tile-pencil .ico,.tile-pencil .chev{color:var(--pink);background:var(--pink-soft)}
+.tile-camera{background:linear-gradient(180deg,#fff,#fcfffe)}.tile-book{background:linear-gradient(180deg,#fff,#fffefa)}
+.recent-panel{border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--soft-shadow);padding:12px;margin-bottom:10px}
+.recent-head{display:flex;align-items:center;margin-bottom:8px}.recent-head b{font-size:14px;font-weight:950;color:#313a40}.recent-head button{margin-left:auto;appearance:none;border:none;background:transparent;color:var(--mint-dark);font-size:11px;font-weight:900;cursor:pointer}
+.recent-list{display:grid;gap:6px}.empty-recent{border:1px dashed #cfe6e7;background:#f9fdfd;border-radius:15px;padding:14px 10px;text-align:center;color:#7d8c93;font-size:12px;font-weight:700;line-height:1.65}
+.recent-row{display:grid;grid-template-columns:50px 1fr auto;align-items:center;gap:10px;border:1px solid var(--line2);border-radius:15px;padding:7px;background:#fff}
+.recent-thumb{width:50px;height:42px;border-radius:11px;background:#f2f2f0;display:grid;place-items:center;overflow:hidden}.recent-thumb svg{width:46px;height:32px}
+.recent-row strong{display:block;font-size:12px;font-weight:900;color:#2d373d;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.recent-row span{display:block;margin-top:2px;color:#7f8e96;font-size:10.5px;font-weight:700}.done-pill{font-style:normal;border-radius:999px;background:#dff7ed;color:var(--green);font-size:10px;font-weight:900;padding:5px 9px}
+.notice{border:1px solid var(--line);border-radius:18px;background:#f8fcfb;padding:11px 12px;color:#65747b;font-size:11.5px;line-height:1.7;margin:0 0 10px}.notice b{color:var(--mint-dark)}
+.safe-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}.safe-mini div{background:#f2fbf8;border:1px solid #def2ec;color:#526369;border-radius:15px;padding:10px;font-size:11px;font-weight:800;line-height:1.45}.safe-mini b{display:block;color:var(--mint-dark);margin-bottom:2px}
+.foot-note{font-size:10.5px;color:#94a2a8;text-align:center;margin-top:auto;padding:4px 0 10px}
+.bottom-nav{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-top:auto;padding:8px;border-radius:25px;background:rgba(255,255,255,.96);border:1px solid var(--line);box-shadow:0 13px 32px rgba(62,108,124,.12);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);flex:0 0 auto}
+.bottom-nav button{appearance:none;border:none;background:transparent;border-radius:19px;display:flex;flex-direction:column;align-items:center;gap:3px;color:#717f87;font-size:10px;font-weight:900;padding:8px 3px;cursor:pointer}
+.bottom-nav button.active{background:#e6f7f3;color:var(--mint-dark)}.bottom-nav svg{width:21px;height:21px}
+/* Forms and buttons */
+.row2{display:flex;gap:9px;align-items:flex-end}.field{margin:0 0 10px}.field label{display:block;font-size:11.5px;color:#596870;font-weight:900;margin-bottom:5px}.field input,.field select{width:100%;min-height:44px;border:1px solid var(--line);border-radius:15px;background:#fff;color:#29343a;font-size:15px;font-weight:700;padding:10px 12px;box-shadow:0 2px 9px rgba(67,99,111,.04)}.field input:focus,.field select:focus{outline:none;border-color:var(--mint2);box-shadow:0 0 0 4px rgba(46,183,165,.13)}.fbtn{flex:0 0 auto;align-self:flex-end;margin-bottom:10px}
+.btn{appearance:none;border:none;border-radius:17px;font-size:15px;font-weight:950;padding:13px 16px;cursor:pointer;width:100%;min-height:48px;letter-spacing:-.02em}.btn:active{transform:scale(.985)}.btn:disabled{opacity:.45}.btn-primary{background:linear-gradient(180deg,#38c9b9,#20ae9e);color:#fff;box-shadow:0 10px 20px rgba(46,183,165,.23)}.btn-stop{background:linear-gradient(180deg,#ee6d6d,#d84f4f);color:#fff}.btn-ghost{background:#fff;color:var(--mint-dark);border:1px solid #aee4da;box-shadow:0 5px 13px rgba(67,99,111,.05)}.btn-sm{font-size:12px;min-height:37px;padding:8px 11px;width:auto;border-radius:13px}.hint{font-size:12px;color:#6c7d85;margin:8px 2px 0;text-align:center;line-height:1.65;font-weight:700}.linkrow{margin-top:10px;text-align:center}.linkrow button{appearance:none;border:none;background:transparent;color:var(--mint-dark);font-weight:900;font-size:13px;cursor:pointer}
+/* Camera */
+.stepper{display:grid;grid-template-columns:repeat(4,1fr);align-items:start;margin:0 0 13px;position:relative}.stepper:before{content:"";position:absolute;left:36px;right:36px;top:14px;height:1.5px;background:#d8e2e5}.stepper span{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;color:#8b989e;font-size:10px;font-weight:900}.stepper i{width:28px;height:28px;border-radius:50%;background:#f3f5f6;border:1px solid #dbe3e6;display:grid;place-items:center;font-style:normal;color:#8d989e;font-size:12px;font-weight:950}.stepper span.active{color:var(--mint-dark)}.stepper span.active i{background:linear-gradient(180deg,#40cbbb,#20ad9d);color:#fff;border-color:transparent}
+.viewport{position:relative;width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,#aadfdb,#7ed4cd);border-radius:24px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:12px;border:1px solid #d7ecec}
+.viewport::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.32),transparent 28%),radial-gradient(circle at 60% 70%,rgba(0,0,0,.06),transparent 32%);z-index:0}video{position:relative;z-index:1;width:100%;height:100%;object-fit:cover;display:block;background:linear-gradient(135deg,#b5e4df,#78d1ca);filter:saturate(1.02) contrast(1.01)}.reticle{position:absolute;inset:22px;border:none;border-radius:18px;pointer-events:none;z-index:3;background:linear-gradient(#fff,#fff) left top/42px 4px no-repeat,linear-gradient(#fff,#fff) left top/4px 42px no-repeat,linear-gradient(#fff,#fff) right top/42px 4px no-repeat,linear-gradient(#fff,#fff) right top/4px 42px no-repeat,linear-gradient(#fff,#fff) left bottom/42px 4px no-repeat,linear-gradient(#fff,#fff) left bottom/4px 42px no-repeat,linear-gradient(#fff,#fff) right bottom/42px 4px no-repeat,linear-gradient(#fff,#fff) right bottom/4px 42px no-repeat}.reticle::before,.reticle::after{display:none}.reticle .dummy{display:none}
+.cam-msg{position:absolute;inset:0;display:none;place-items:center;text-align:center;color:#335;z-index:5;background:rgba(255,255,255,.82);padding:24px;font-size:13px;line-height:1.7;font-weight:800;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}.cam-msg.show{display:grid}.spin{width:28px;height:28px;border:3px solid rgba(46,183,165,.22);border-top-color:var(--mint);border-radius:50%;margin:0 auto 12px;animation:spin 1s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.capbadge,.frozen-badge{position:absolute;top:13px;left:13px;display:none;align-items:center;gap:7px;background:rgba(255,255,255,.88);color:#28434b;border:1px solid #d5eeec;border-radius:999px;padding:7px 12px;font-size:12px;font-weight:950;box-shadow:0 6px 16px rgba(67,99,111,.10);z-index:4}.capbadge.show,.frozen-badge.show{display:flex}.capbadge .dot{width:8px;height:8px;border-radius:50%;background:#ff8282;animation:pulse 1s infinite}@keyframes pulse{50%{opacity:.3}}.progress{position:absolute;left:14px;right:14px;top:52px;height:6px;border-radius:999px;background:rgba(255,255,255,.5);overflow:hidden;display:none;z-index:4}.progress.show{display:block}.progress i{display:block;height:100%;width:0%;background:linear-gradient(90deg,#48d9cc,#1eb4a5);transition:width .2s}.guide{position:absolute;left:0;right:0;bottom:0;display:block!important;background:rgba(238,251,247,.86);color:#4d5c62;border-top:1px solid rgba(255,255,255,.55);border-radius:18px 18px 0 0;padding:13px 12px;font-size:12.5px;text-align:center;font-weight:800;line-height:1.4;z-index:4;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.camera-controls{display:grid;grid-template-columns:1fr 76px 1fr;align-items:center;margin:-2px 0 10px;color:var(--mint-dark)}.camera-tool{appearance:none;border:none;background:transparent;color:var(--mint-dark);display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;font-weight:900;cursor:pointer}.camera-tool svg{width:23px;height:23px}.shutter{width:68px;height:68px;border-radius:50%;border:3px solid var(--mint);background:#fff;box-shadow:inset 0 0 0 7px #fff,0 0 0 1px #c8ece6,0 8px 18px rgba(46,183,165,.16);justify-self:center}
+/* Predict result */
+.readout{background:#fff;border:1px solid var(--line);border-radius:22px;padding:14px;box-shadow:var(--soft-shadow);margin-top:8px}.verdict-label{font-size:11px;color:var(--mint-dark);font-weight:950;letter-spacing:.08em;text-align:center}.verdict{font-size:20px;font-weight:950;text-align:center;color:#313a40;margin:4px 0 8px;line-height:1.35;min-height:1.2em;letter-spacing:-.03em}.verdict.idle,.verdict.waiting{font-size:14px;color:#6f7d86;text-align:left;margin:0 0 8px}.ranks{display:grid;gap:9px;margin-top:10px}.rank{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:10px;border:1px solid var(--line2);border-radius:17px;background:#fff;padding:9px;text-align:left;width:100%;cursor:default;box-shadow:0 4px 12px rgba(67,99,111,.05)}.rank.tappable{cursor:pointer}.rank.tappable:active{transform:scale(.99)}.rank .no{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#e8f8f5;color:var(--mint-dark);font-size:12px;font-weight:950;grid-row:1/span 2}.rank:before{content:"";width:56px;height:48px;border-radius:12px;background:#f2f0ee;grid-column:1;grid-row:1/span 2;display:block}.rank .no{position:absolute;transform:translate(-2px,-2px);z-index:2}.rank{position:relative}.rank .body{grid-column:2;min-width:0}.rank .top{display:flex;align-items:center;gap:8px;margin-bottom:4px}.rank .rname{font-size:13px;font-weight:950;color:#30393f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rank .rpct{margin-left:auto;color:var(--mint-dark);background:#dff7ee;border-radius:999px;padding:3px 8px;font-size:11px;font-weight:950}.rank .bar{height:0;background:transparent;overflow:hidden}.rank .bar i{display:none}.rank .go{grid-column:3;font-size:18px;color:var(--mint-dark);font-weight:900}.rank .go.none{font-size:11px;color:#9aa7ad}.predict-actions{margin-top:11px}.predict-actions .btn{min-height:46px}.threshctrl{display:flex;align-items:center;gap:10px;margin-top:12px;color:#5f6e76;font-size:11.5px;font-weight:850}.threshctrl input[type=range]{flex:1;accent-color:var(--mint)}#predictTapHint{color:var(--mint-dark);font-weight:900;text-align:center}
+.predict-screen.result-ready .viewport,.predict-screen.result-ready .camera-controls{display:none}.predict-screen.result-ready .stepper span:nth-child(3){color:var(--mint-dark)}.predict-screen.result-ready .stepper span:nth-child(3) i{background:linear-gradient(180deg,#40cbbb,#20ad9d);color:#fff;border-color:transparent}.predict-screen.result-ready .readout{margin-top:8px;padding-top:18px}.predict-screen.result-ready .readout::before{content:"";display:block;width:50px;height:50px;margin:0 auto 6px;border-radius:50%;background:linear-gradient(180deg,#43cabb,#1eaa9b);box-shadow:0 8px 18px rgba(46,183,165,.20)}.predict-screen.result-ready .readout::after{content:"✓";position:absolute;left:50%;transform:translate(-50%,-56px);color:#fff;font-size:26px;font-weight:950}.predict-screen.result-ready .readout{position:relative}.predict-screen.result-ready .verdict-label{font-size:12px}.predict-screen.result-ready .verdict{font-size:16px;color:var(--mint-dark)}
+/* Library */
+.sec-title{font-size:15px;color:#30393f;font-weight:950;margin:8px 0 10px;display:flex;align-items:center;letter-spacing:-.03em}.sec-title .add{margin-left:auto}.chipbar{display:flex;gap:8px;overflow:auto;margin:-2px -2px 12px;padding:2px}.chip{border:1px solid var(--line);background:#fff;color:#5b686f;border-radius:999px;padding:8px 12px;font-size:11px;font-weight:900;white-space:nowrap}.chip.active{background:var(--mint);border-color:var(--mint);color:#fff}.folder{border:0;background:transparent;margin:0 0 10px}.folder-head{display:flex;align-items:center;gap:8px;background:transparent;border:0;padding:3px 0 7px}.folder-head .fname{font-size:13px;font-weight:950;color:#30393f}.folder-head .fcount{font-size:10.5px;color:#8a98a0;font-weight:900}.folder-head .fact{margin-left:auto;display:flex;gap:5px}.crow{display:grid;grid-template-columns:66px 1fr auto;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:17px;padding:9px;margin:0 0 8px;box-shadow:0 5px 14px rgba(67,99,111,.055)}.crow::before{content:"";width:66px;height:56px;border-radius:13px;background:#f2f1ee;grid-column:1;grid-row:1/span 2;display:block;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 90 56' xmlns='http://www.w3.org/2000/svg' fill='none'%3E%3Cpath d='M18 39 66 15' stroke='%23727a7d' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='17' cy='39' r='9' stroke='%23727a7d' stroke-width='4'/%3E%3Ccircle cx='67' cy='15' r='9' stroke='%23727a7d' stroke-width='4'/%3E%3Cpath d='M42 35h31' stroke='%23adb2b3' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:center;background-size:58px 38px}.crow .nm{grid-column:2;font-weight:950;font-size:13px;color:#30393f}.crow .ct{grid-column:2;width:max-content;color:#7d8a91;font-size:10.5px;font-weight:800;background:transparent;border:none;padding:0}.crow .haspx{grid-column:2;width:max-content;font-size:10px;color:var(--mint-dark);font-weight:950;background:#e2f7ef;border-radius:999px;padding:3px 8px}.crow .act{grid-column:3;grid-row:1/span 2;display:flex;gap:5px;align-items:center;justify-content:end;flex-wrap:wrap;max-width:92px}.crow select{font-size:10.5px;border:1px solid var(--line);border-radius:999px;background:#fff;color:#66757c;padding:5px 6px;max-width:86px}
+.icobtn{appearance:none;border:1px solid var(--line);background:#fff;color:#68767d;min-width:28px;height:28px;border-radius:11px;font-size:10.5px;font-weight:950;cursor:pointer;padding:2px 6px;box-shadow:0 3px 9px rgba(67,99,111,.04)}.icobtn:active{color:var(--mint-dark);background:#effbf8}.icobtn.del:active{color:var(--danger);background:var(--danger-soft)}.empty{color:#7c8a91;font-size:12px;text-align:center;padding:16px;border:1px dashed #cfe2e5;border-radius:16px;background:#fbfefe;margin-top:8px;font-weight:700;line-height:1.7}.security-strip{display:grid;grid-template-columns:44px 1fr;align-items:center;gap:10px;border:1px solid var(--line);border-radius:18px;background:#f5fbf9;padding:12px;margin:10px 0;color:#65747b;font-size:11.5px;font-weight:750;line-height:1.55}.security-strip i{width:40px;height:40px;border-radius:15px;background:#dff7f1;color:var(--mint-dark);display:grid;place-items:center}.security-strip svg{width:24px;height:24px}.security-strip b{display:block;color:var(--mint-dark);font-size:12.5px}
+/* Steps editor */
+.stepgrid{display:grid;gap:10px;margin-top:8px}.stepcard{display:grid;grid-template-columns:28px 1fr 118px;gap:10px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:17px;padding:10px;position:relative;box-shadow:0 5px 14px rgba(67,99,111,.055);overflow:hidden}.stepcard img{grid-column:3;grid-row:1/span 2;width:118px;height:68px;object-fit:cover;border-radius:12px;background:#f2f1ee;display:block}.stepcard .lbl{grid-column:1;grid-row:1/span 2;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#40cbbb,#20ad9d);color:#fff;font-size:13px;font-weight:950;position:static;padding:0}.stepcard .steptext{grid-column:2;min-width:0}.stepcard .stepname{display:block;font-size:12.5px;font-weight:950;color:#30393f;margin-bottom:2px}.stepcap{width:100%;border:none;border-top:0;font-size:11.5px;padding:3px 0;color:#5a6870;background:transparent;font-weight:700;line-height:1.45}.stepcap:focus{outline:none;background:#f2fbf9;border-radius:8px;padding-left:5px}.stepcard .x{position:absolute;top:7px;right:7px;width:24px;height:24px;border-radius:50%;border:1px solid #ffe0e0;background:#fff;color:var(--danger);font-size:13px;font-weight:950;cursor:pointer;box-shadow:0 3px 9px rgba(67,99,111,.06)}.addstep{border:1.6px solid #98ddd3;background:#fff;color:var(--mint-dark);border-radius:18px;min-height:45px;display:grid;place-items:center;text-align:center;font-size:13px;font-weight:950;cursor:pointer}.exportpanel{margin-top:12px;border:1px solid var(--line);border-radius:18px;background:#fff;padding:12px;box-shadow:var(--soft-shadow)}.ep-title{font-size:13px;font-weight:950;color:#30393f;margin-bottom:8px}.epitem{display:flex;align-items:center;gap:9px;padding:8px 3px;border-top:1px solid var(--line2);font-size:12.5px;font-weight:800}.epitem:first-of-type{border-top:none}.epitem input{width:18px;height:18px;accent-color:var(--mint)}.epitem .epc{margin-left:auto;font-size:11px;color:#87959c}.ep-divider{font-size:10.5px;color:#a0adb3;text-align:center;margin:7px 0 2px;font-weight:900}
+/* Slide viewer */
+.modal{position:fixed;inset:0;background:linear-gradient(180deg,#fff,#f0fbf8);display:none;flex-direction:column;z-index:50;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}.modal.show{display:flex}.modal .mhead{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px;padding:16px 18px;color:#30393f}.modal .mtitle{font-weight:950;font-size:16px;text-align:center}.modal .mclose{grid-column:3;background:#fff;color:#58666d;border:1px solid var(--line);width:36px;height:36px;border-radius:15px;font-size:16px;font-weight:950;cursor:pointer;box-shadow:0 5px 14px rgba(67,99,111,.08)}.modal .stage{flex:1;display:grid;place-items:center;padding:0 18px;min-height:0}.modal .stage img{max-width:100%;max-height:100%;border-radius:24px;object-fit:contain;box-shadow:var(--shadow);border:1px solid var(--line)}.modal .stepno{color:var(--mint-dark);text-align:center;font-weight:950;font-size:15px;margin:12px 0 4px}.modal .caption{color:#4d5b63;background:#fff;border:1px solid var(--line);box-shadow:var(--soft-shadow);border-radius:18px;margin:10px 18px 0;padding:11px 13px;font-size:13px;line-height:1.6;display:none;font-weight:700}.modal .caption.show{display:block}.modal .caption .tap{display:block;color:#8c9ba3;font-size:10.5px;margin-top:5px;font-weight:900}.modal .nav{display:flex;gap:10px;padding:15px 18px;padding-bottom:calc(15px + env(safe-area-inset-bottom))}.modal .nav button{flex:1;background:#fff;color:#516169;border:1px solid var(--line);border-radius:17px;padding:13px;font-size:15px;font-weight:950;cursor:pointer;box-shadow:0 5px 14px rgba(67,99,111,.07)}.modal .nav button:disabled{opacity:.4}.modal .nav .main{background:linear-gradient(180deg,#38c9b9,#20ae9e);color:#fff;border-color:transparent}
+
+
+/* final result-state refinements */
+.predict-screen.result-ready .readout::before{content:"✓"!important;display:grid!important;place-items:center!important;width:50px!important;height:50px!important;margin:0 auto 6px!important;border-radius:50%!important;background:linear-gradient(180deg,#43cabb,#1eaa9b)!important;box-shadow:0 8px 18px rgba(46,183,165,.20)!important;color:#fff!important;font-size:27px!important;font-weight:950!important}
+.predict-screen.result-ready .readout::after{display:none!important}
+.predict-screen.result-ready .appbar strong{font-size:0!important}
+.predict-screen.result-ready .appbar strong::after{content:"判別結果";font-size:16px;font-weight:900;color:#2d3439}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="bar"><span class="brand">器械分解ナビ</span><span class="tag">端末内保存</span></header>
+
+  <!-- HOME -->
+  <section id="home" class="screen active home-screen">
+    <div class="statusbar"><b>9:41</b><span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="wifi"></span><span class="battery"></span></span></div>
+    <div class="appbar home-appbar"><button class="nav-icon" onclick="showSafetyNote()" aria-label="メニュー"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"><path d="M9 15h30M9 24h30M9 33h30"/></svg></button><strong>器械分解ナビ</strong><button class="nav-icon" onclick="showSafetyNote()" aria-label="お知らせ"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.1" stroke-linecap="round" stroke-linejoin="round"><path d="M17 39h14"/><path d="M20 39a4 4 0 0 0 8 0"/><path d="M36 34H12c3-3 4-6 4-13a8 8 0 0 1 16 0c0 7 1 10 4 13Z"/></svg></button></div>
+    <div class="hello-card">
+      <div><b>こんにちは！</b><p>一緒に器械の名前や<br>分解方法を覚えていきましょう。</p></div>
+      <div class="character-wrap" aria-hidden="true"><img class="reference-character" src="data:image/png;base64,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" alt=""></div>
+    </div>
+    <div class="menu">
+      <button class="tile tile-camera" onclick="goPredict()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17l3-5h12l3 5h5a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V21a4 4 0 0 1 4-4h5Z"/><circle cx="24" cy="28" r="8"/></svg></span><h2>判別する</h2><small>カメラで器械を写して<br>名前を調べます</small><span class="chev">›</span></button>
+      <button class="tile tile-book" onclick="goLearn()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11h13a7 7 0 0 1 7 7v23a8 8 0 0 0-7-4H8V11Z"/><path d="M40 11H27a7 7 0 0 0-7 7v23a8 8 0 0 1 7-4h13V11Z"/></svg></span><h2>学習する</h2><small>器械の分解手順を<br>学習・記録します</small><span class="chev">›</span></button>
+      <button class="tile tile-folder" onclick="goLibrary()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15a5 5 0 0 1 5-5h9l5 5h14a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V15Z"/></svg></span><h2>整理棚</h2><small>学習した器械や手順を<br>一覧で確認できます</small><span class="chev">›</span></button>
+      <button class="tile tile-pencil" onclick="goLibrary()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M33.5 6.5a4.8 4.8 0 0 1 6.8 6.8L17 36.5 7 41l4.5-10 22-24.5Z"/><path d="M29 11l8 8"/></svg></span><h2>手順を編集</h2><small>手順の追加・編集・<br>削除ができます</small><span class="chev">›</span></button>
+    </div>
+    <div class="recent-panel"><div class="recent-head"><b>最近の学習</b><button onclick="goLibrary()">すべて見る ›</button></div><div class="recent-list" id="homeRecent"></div></div>
+    <nav class="bottom-nav" aria-label="下部メニュー"><button data-nav="home" class="active" onclick="goHome()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 23 24 9l17 14"/><path d="M12 21v20h9V29h6v12h9V21"/></svg><span>ホーム</span></button><button data-nav="learn" class="" onclick="goLearn()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11h13a7 7 0 0 1 7 7v23a8 8 0 0 0-7-4H8V11Z"/><path d="M40 11H27a7 7 0 0 0-7 7v23a8 8 0 0 1 7-4h13V11Z"/></svg><span>学習</span></button><button data-nav="library" class="" onclick="goLibrary()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15a5 5 0 0 1 5-5h9l5 5h14a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V15Z"/></svg><span>整理棚</span></button><button data-nav="predict" class="" onclick="goPredict()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="12"/><path d="m31 31 10 10"/></svg><span>判別</span></button></nav>
+  </section>
+
+  <!-- LEARN -->
+  <section id="learn" class="screen learn-screen">
+    <div class="statusbar"><b>9:41</b><span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="wifi"></span><span class="battery"></span></span></div>
+    <div class="appbar"><button class="nav-icon" onclick="goHome()" aria-label="戻る"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>学習する</strong><button class="nav-icon" onclick="showSafetyNote()" aria-label="ヘルプ"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M19 19a5 5 0 1 1 8 4c-2 1.4-3 2.4-3 5"/><path d="M24 35h.01"/></svg></button></div>
+    <div class="stepper"><span class="active"><i>1</i>名前</span><span><i>2</i>撮影</span><span><i>3</i>保存</span><span><i>4</i>手順</span></div>
+    <div class="row2">
+      <div class="field" style="flex:1"><label for="nameInput">器械の名前</label><input id="nameInput" type="text" placeholder="例：モスキート鉗子（直）" autocomplete="off"></div>
+      <div class="field" style="flex:0 0 38%"><label for="folderSelect">カテゴリ</label><select id="folderSelect"></select></div>
+      <button class="btn btn-ghost btn-sm fbtn" onclick="newFolderFromLearn()">＋</button>
+    </div>
+    <div class="viewport">
+      <video id="learnVideo" autoplay playsinline muted></video>
+      <div class="reticle"></div>
+      <div class="capbadge" id="capBadge"><span class="dot"></span><span id="capCount">撮影中</span></div>
+      <div class="progress" id="capProgress"><i id="capProgressBar"></i></div>
+      <div class="guide" id="capGuide">向きを変えて：横 → 縦 → 斜め → 裏返し</div>
+      <div class="cam-msg" id="learnMsg"><div><div class="spin"></div><span id="learnMsgText">AIモデルを読み込み中…</span></div></div>
+    </div>
+    <button class="btn btn-primary" id="captureBtn" onclick="toggleCapture()" disabled>撮影して覚えさせる</button>
+    <p class="hint" id="learnHint">名前を入れ、器械を枠に映して押します。色々な向きに回すと覚えやすくなります。</p>
+    <div class="linkrow"><button onclick="goLibrary()">整理棚をひらく →</button></div>
+  </section>
+
+  <!-- LIBRARY -->
+  <section id="library" class="screen library-screen">
+    <div class="statusbar"><b>9:41</b><span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="wifi"></span><span class="battery"></span></span></div>
+    <div class="appbar"><button class="nav-icon" onclick="goHome()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>整理棚</strong><button class="nav-icon" onclick="newFolder()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"><path d="M24 10v28M10 24h28"/></svg></button></div>
+    <div class="chipbar"><span class="chip active">すべて</span><span class="chip">鉗子</span><span class="chip">剪刀</span><span class="chip">持針器</span><span class="chip">その他</span></div>
+    <div class="sec-title">保存した器械<button class="btn btn-ghost btn-sm add" onclick="newFolder()">＋ フォルダ</button></div>
+    <div id="libBody"></div>
+    <div class="security-strip"><i><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="21" width="28" height="20" rx="5"/><path d="M16 21v-7a8 8 0 0 1 16 0v7"/><path d="M24 29v5"/></svg></i><div><b>すべてのデータは端末内に保存されます</b>外部に送信されることはありません。</div></div>
+    <div class="sec-title">バックアップ・配布</div>
+    <p class="hint" style="text-align:left;margin:0 2px 10px">全データを1ファイルに書き出して保存・配布できます。別端末で読み込むと、その端末の内容は置き換わります。</p>
+    <div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="openExportPanel()">書き出し</button><button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">読み込み</button></div>
+    <div id="exportPanel" class="exportpanel" style="display:none"><div class="ep-title">書き出す範囲を選ぶ</div><div id="exportList"></div><div style="display:flex;gap:10px;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="closeExportPanel()">やめる</button><button class="btn btn-primary btn-sm" onclick="exportSelected()">この内容で書き出し</button></div></div>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="onImportFile(event)">
+    <nav class="bottom-nav" aria-label="下部メニュー"><button data-nav="home" class="" onclick="goHome()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 23 24 9l17 14"/><path d="M12 21v20h9V29h6v12h9V21"/></svg><span>ホーム</span></button><button data-nav="learn" class="" onclick="goLearn()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11h13a7 7 0 0 1 7 7v23a8 8 0 0 0-7-4H8V11Z"/><path d="M40 11H27a7 7 0 0 0-7 7v23a8 8 0 0 1 7-4h13V11Z"/></svg><span>学習</span></button><button data-nav="library" class="active" onclick="goLibrary()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15a5 5 0 0 1 5-5h9l5 5h14a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V15Z"/></svg><span>整理棚</span></button><button data-nav="predict" class="" onclick="goPredict()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="12"/><path d="m31 31 10 10"/></svg><span>判別</span></button></nav>
+  </section>
+
+  <!-- STEPS EDITOR -->
+  <section id="steps" class="screen steps-screen">
+    <div class="statusbar"><b>9:41</b><span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="wifi"></span><span class="battery"></span></span></div>
+    <div class="appbar"><button class="nav-icon" id="stepsBack"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>分解手順</strong><button class="nav-icon" onclick="addStep()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><path d="M14 24h.01M24 24h.01M34 24h.01"/></svg></button></div>
+    <div class="sec-title" id="stepsTitle">分解手順</div>
+    <p class="hint" style="text-align:left;margin:0 2px 8px">写真を順番に追加します。並んだ順に Step1, Step2 … になります。後から差し替え・削除できます。</p>
+    <div class="stepgrid" id="stepGrid"></div>
+    <input type="file" id="stepFile" accept="image/*" style="display:none" onchange="onStepFile(event)">
+    <div style="margin-top:14px"><button class="btn btn-ghost" onclick="goLibrary()">整理棚にもどる</button></div>
+  </section>
+
+  <!-- PREDICT -->
+  <section id="predict" class="screen predict-screen">
+    <div class="statusbar"><b>9:41</b><span class="status-icons"><span class="signal"><i></i><i></i><i></i><i></i></span><span class="wifi"></span><span class="battery"></span></span></div>
+    <div class="appbar"><button class="nav-icon" onclick="goHome()" aria-label="戻る"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>判別する</strong><button class="nav-icon" onclick="showSafetyNote()" aria-label="ヘルプ"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M19 19a5 5 0 1 1 8 4c-2 1.4-3 2.4-3 5"/><path d="M24 35h.01"/></svg></button></div>
+    <div class="stepper"><span class="active"><i>1</i>撮影</span><span><i>2</i>判別中</span><span><i>3</i>結果</span><span><i>4</i>完了</span></div>
+    <div class="viewport">
+      <video id="predictVideo" autoplay playsinline muted></video>
+      <div class="reticle"></div>
+      <div class="capbadge" id="predBadge"><span class="dot"></span>判別中…</div>
+      <div class="frozen-badge" id="frozenBadge">✓ 判定しました</div>
+      <div class="guide">器械を中央に写してください</div>
+      <div class="cam-msg" id="predictMsg"><div><div class="spin"></div><span id="predictMsgText">準備中…</span></div></div>
+    </div>
+    <div class="camera-controls"><button class="camera-tool" onclick="showSafetyNote()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 29a10 10 0 1 1 12 0c-2 1.4-2.4 3-2.4 5h-7.2c0-2-.4-3.6-2.4-5Z"/><path d="M20 40h8M21 35h6M24 4v4M8 12l3 3M40 12l-3 3"/></svg><span>ライト</span></button><button class="shutter" onclick="restartPredict()" aria-label="判別"></button><button class="camera-tool" onclick="showSafetyNote()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 17a14 14 0 0 1 22-3l3 3"/><path d="M39 9v8h-8"/><path d="M34 31a14 14 0 0 1-22 3l-3-3"/><path d="M9 39v-8h8"/></svg><span>反転</span></button></div>
+    <div class="readout">
+      <div class="verdict-label">判定</div>
+      <div class="verdict idle" id="verdict">器械を枠に映してください</div>
+      <div class="ranks" id="ranks"></div>
+      <div class="predict-actions" id="predictActions" style="display:none"><button class="btn btn-primary" onclick="restartPredict()">もう一度判別する</button></div>
+      <div class="threshctrl"><span>確定ライン</span><input id="threshRange" type="range" min="50" max="95" step="5" value="80" oninput="onThresh(this.value)"><span class="tnum" id="threshVal">80%</span></div>
+      <div class="threshctrl"><span>厳しさ</span><input id="gateRange" type="range" min="0" max="80" step="5" value="45" oninput="onGate(this.value)"><span class="tnum" id="gateVal">中</span></div>
+      <p class="hint" style="text-align:left;margin-top:4px">厳しさを上げるほど、学習した器械に近くないものを「該当なし」として弾きます。</p>
+      <p class="hint" id="predictTapHint" style="display:none">候補をタップすると分解手順が開きます。</p>
+    </div>
+  </section>
+</div>
+
+<!-- SLIDE VIEWER -->
+<div class="modal" id="slideModal">
+  <div class="mhead"><span></span><span class="mtitle" id="slideTitle">分解手順</span><button class="mclose" onclick="closeSlides()">✕</button></div>
+  <div class="stepno" id="slideStepNo"></div>
+  <div class="stage" id="slideStage" onclick="toggleCaption()"></div>
+  <div class="caption" id="slideCaption"></div>
+  <div class="nav" id="slideNav"><button id="slidePrev" onclick="slideMove(-1)">‹ 前</button><button class="main" id="slideNext" onclick="slideMove(1)">次 ›</button></div>
+</div>
+
+<script>
+/* ============ 器械分解ナビ（学習・整理棚・手順・判別） ============
+   MobileNet（特徴抽出）＋ KNN（判別）。端末内で完結。
+   外部通信はAIライブラリ・モデルの初回読み込みに限定し、読み込み後は通信をロックする。 */
+const STORE_KEY='kikai_v3';
+let featureModel=null, classifier=null, stream=null;
+let capturing=false, captureTimer=null;
+let sessionEmb=[];                 // 今回の撮影で集めた“多様な角度”の特徴（保存確認まで分類器には入れない）
+let captureName=null, captureFolder=null;
+let predictRAF=null, predictBusy=false, lastT=0, threshold=0.80, simGate=0.45;
+let stableName=null, stableCount=0, frozen=false;
+let meta={folders:[],classes:{}};  // classes[name]={folder, steps:[imageId,...]}
+let stepsEditTarget=null;          // 手順編集中の器械名
+let slideName=null, slideIdx=0;
+let imgCache={};                   // imageId -> dataURL（表示用キャッシュ）
+
+/* ====== プライバシーガード：モデル読み込み後の外部通信を止める ====== */
+const TRUSTED_NETWORK_HOSTS=new Set(['cdn.jsdelivr.net','unpkg.com','storage.googleapis.com']);
+let NETWORK_BOOTSTRAP_OPEN=true;
+function allowNetworkUrl(raw){
+  try{
+    if(!raw)return false;
+    const u=new URL(raw,location.href);
+    if(u.protocol==='blob:'||u.protocol==='data:')return true;
+    if(u.origin===location.origin)return true;
+    return NETWORK_BOOTSTRAP_OPEN && TRUSTED_NETWORK_HOSTS.has(u.hostname);
+  }catch(e){return false;}
+}
+(function installPrivacyGuard(){
+  if(window.__kikaiPrivacyGuard)return;
+  window.__kikaiPrivacyGuard=true;
+  const originalFetch=window.fetch?window.fetch.bind(window):null;
+  if(originalFetch){
+    window.fetch=function(input,init){
+      const raw=typeof input==='string'?input:(input&&input.url)||'';
+      if(!allowNetworkUrl(raw))return Promise.reject(new Error('外部通信はAIモデル読み込み後にロックされています。'));
+      return originalFetch(input,init);
+    };
+  }
+  const originalBeacon=navigator.sendBeacon?navigator.sendBeacon.bind(navigator):null;
+  if(originalBeacon){
+    navigator.sendBeacon=function(url,data){
+      if(!allowNetworkUrl(url))return false;
+      return originalBeacon(url,data);
+    };
+  }
+  const XHR=window.XMLHttpRequest;
+  if(XHR&&XHR.prototype){
+    const open=XHR.prototype.open;
+    const send=XHR.prototype.send;
+    XHR.prototype.open=function(method,url){this.__kikaiURL=url;return open.apply(this,arguments);};
+    XHR.prototype.send=function(){
+      if(this.__kikaiURL&&!allowNetworkUrl(this.__kikaiURL))throw new Error('外部通信はAIモデル読み込み後にロックされています。');
+      return send.apply(this,arguments);
+    };
+  }
+  const OriginalWebSocket=window.WebSocket;
+  if(OriginalWebSocket){
+    const GuardedWebSocket=function(url,protocols){
+      if(!allowNetworkUrl(url))throw new Error('外部通信はAIモデル読み込み後にロックされています。');
+      return protocols!==undefined?new OriginalWebSocket(url,protocols):new OriginalWebSocket(url);
+    };
+    GuardedWebSocket.prototype=OriginalWebSocket.prototype;
+    window.WebSocket=GuardedWebSocket;
+  }
+  const OriginalEventSource=window.EventSource;
+  if(OriginalEventSource){
+    const GuardedEventSource=function(url,config){
+      if(!allowNetworkUrl(url))throw new Error('外部通信はAIモデル読み込み後にロックされています。');
+      return new OriginalEventSource(url,config);
+    };
+    GuardedEventSource.prototype=OriginalEventSource.prototype;
+    window.EventSource=GuardedEventSource;
+  }
+})();
+function privacyLockNetwork(){NETWORK_BOOTSTRAP_OPEN=false;}
+
+/* ====== 端末内データベース（IndexedDB）：手順写真など大きいデータ用 ====== */
+const DB_NAME='kikai_db', DB_VER=1;
+let _db=null, _idbOK=true;
+function openDB(){return new Promise((resolve,reject)=>{
+  let req;try{req=indexedDB.open(DB_NAME,DB_VER);}catch(e){reject(e);return;}
+  req.onupgradeneeded=()=>{const d=req.result;if(!d.objectStoreNames.contains('kv'))d.createObjectStore('kv');if(!d.objectStoreNames.contains('images'))d.createObjectStore('images');};
+  req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+});}
+async function db(){if(_db)return _db;_db=await openDB();return _db;}
+function idbPut(store,key,val){return new Promise((res,rej)=>{db().then(d=>{const tx=d.transaction(store,'readwrite');tx.objectStore(store).put(val,key);tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('abort'));}).catch(rej);});}
+function idbGet(store,key){return new Promise((res,rej)=>{db().then(d=>{const tx=d.transaction(store,'readonly');const r=tx.objectStore(store).get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}).catch(rej);});}
+function idbDel(store,key){return new Promise((res)=>{db().then(d=>{const tx=d.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}).catch(()=>res(false));});}
+async function preloadImages(ids){for(const id of ids){if(imgCache[id])continue;try{const v=await idbGet('images',id);if(v)imgCache[id]=v;}catch(e){}}}
+function clearImages(){return new Promise((res)=>{db().then(d=>{const tx=d.transaction('images','readwrite');tx.objectStore('images').clear();tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}).catch(()=>res(false));});}
+
+const $=id=>document.getElementById(id);
+
+/* 多様性の判定パラメータ（自動停止の基準） */
+const SIM_NEW=0.90;     // これ未満なら「新しい角度」とみなす
+const MIN_SAMPLES=24;   // 最低これだけ多様な角度を集める
+const REDUNDANT_STOP=22;// 連続でこれだけ「代わり映えしない」と十分とみなす
+const HARD_CAP=120;     // 安全上限
+let redundantStreak=0;
+
+/* ---- スクリプト読み込み（CDN代替つき） ---- */
+function loadScript(urls){return new Promise((res,rej)=>{let i=0;const t=()=>{if(i>=urls.length){rej(new Error('cdn'));return;}const s=document.createElement('script');s.src=urls[i++];s.referrerPolicy='no-referrer';s.crossOrigin='anonymous';s.onload=()=>res();s.onerror=()=>{s.remove();t();};document.head.appendChild(s);};t();});}
+async function ensureModel(msgEl,textEl){
+  if(featureModel&&classifier)return true;
+  if(msgEl)msgEl.classList.add('show');
+  try{
+    if(textEl)textEl.textContent='部品を読み込み中…（初回のみ）';
+    if(typeof tf==='undefined')await loadScript(['https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js','https://unpkg.com/@tensorflow/tfjs@4.22.0/dist/tf.min.js']);
+    if(typeof window.mobilenet==='undefined')await loadScript(['https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js','https://unpkg.com/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js']);
+    if(typeof window.knnClassifier==='undefined')await loadScript(['https://cdn.jsdelivr.net/npm/@tensorflow-models/knn-classifier@1.2.6/dist/knn-classifier.min.js','https://unpkg.com/@tensorflow-models/knn-classifier@1.2.6/dist/knn-classifier.min.js']);
+  }catch(e){console.error(e);if(textEl)textEl.innerHTML='部品を取得できませんでした。<br>通信環境を確認してください。';return false;}
+  try{
+    if(!classifier)classifier=knnClassifier.create();
+    if(!featureModel){
+      if(textEl)textEl.textContent='AIモデルを読み込み中…（初回のみ）';
+      try{featureModel=await window.mobilenet.load({version:2,alpha:1.0});}
+      catch(inner){console.warn('v2 fail->v1',inner);featureModel=await window.mobilenet.load({version:1,alpha:1.0});}
+      try{
+        const warm=document.createElement('canvas');warm.width=224;warm.height=224;
+        const out=featureModel.infer(warm,true);if(out&&out.dispose)out.dispose();
+      }catch(warmErr){console.warn('warmup skipped',warmErr);}
+    }
+    await loadStore();
+    privacyLockNetwork();
+    return true;
+  }catch(e){console.error(e);if(textEl)textEl.innerHTML='AIモデル本体を取得できませんでした。<br>https のURLを、本物の Safari / Chrome で開いてください。';return false;}
+}
+
+/* ---- カメラ ---- */
+async function startCamera(v,msgEl,textEl){
+  stopCamera();
+  if(msgEl)msgEl.classList.add('show');
+  if(textEl)textEl.textContent='カメラを起動中…';
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},width:{ideal:1280},height:{ideal:960}},audio:false});
+    v.srcObject=stream;await v.play().catch(()=>{});
+    if(msgEl)msgEl.classList.remove('show');return true;
+  }catch(e){console.error(e);if(textEl)textEl.innerHTML='カメラを使えませんでした。<br>カメラ許可と、Safari / Chrome で開いているか確認してください。';return false;}
+}
+function stopCamera(){if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}}
+
+/* ---- 画面遷移 ---- */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  document.documentElement.setAttribute('data-screen',id);
+  document.querySelectorAll('[data-nav]').forEach(b=>b.classList.toggle('active',b.getAttribute('data-nav')===id));
+}
+function goHome(){stopCapture(true);stopPredictLoop();stopCamera();renderHomeRecent();showScreen('home');}
+async function goLearn(){
+  showScreen('learn');renderFolderSelect();
+  const ok=await ensureModel($('learnMsg'),$('learnMsgText'));if(!ok)return;
+  $('learnMsg').classList.remove('show');
+  const cam=await startCamera($('learnVideo'),$('learnMsg'),$('learnMsgText'));
+  $('captureBtn').disabled=!cam;
+}
+/* 入力（キーボード）でカメラ映像が止まることがあるので、確実に再開させる */
+function resumeLearnCam(){
+  const v=$('learnVideo');
+  if(v&&v.srcObject){ const r=v.play(); if(r&&r.catch)r.catch(()=>{}); }
+}
+async function goLibrary(){showScreen('library');stopCamera();await ensureModel(null,null);renderLibrary();}
+async function goPredict(){
+  showScreen('predict');resetPredictUI();
+  const ok=await ensureModel($('predictMsg'),$('predictMsgText'));if(!ok)return;
+  if(!classifier||classifier.getNumClasses()<2){$('predictMsg').classList.add('show');$('predictMsgText').innerHTML='まだ学習が足りません。<br>「器械を登録」で2種類以上を覚えさせてください。';return;}
+  $('predictMsg').classList.remove('show');
+  buildSimIndex();
+  const cam=await startCamera($('predictVideo'),$('predictMsg'),$('predictMsgText'));
+  if(cam)startPredictLoop();
+}
+/* 学習例を正規化ベクトルとして展開（該当なし判定に使う） */
+let simIndex=[];
+function buildSimIndex(){
+  simIndex=[];
+  if(!classifier)return;
+  const d=classifier.getClassifierDataset();
+  Object.keys(d).forEach(k=>{
+    const t=d[k];const shape=t.shape;const n=shape[0],dim=shape[1];
+    const flat=t.dataSync();
+    for(let i=0;i<n;i++){
+      const row=new Float32Array(dim);
+      for(let j=0;j<dim;j++)row[j]=flat[i*dim+j];
+      simIndex.push(normalize(row));
+    }
+  });
+}
+function maxSimToIndex(vn){let m=-1;for(const e of simIndex){let s=0;for(let i=0;i<vn.length;i++)s+=vn[i]*e[i];if(s>m)m=s;}return m;}
+
+/* ---- 特徴ベクトルの正規化と類似度（多様性判定用） ---- */
+function normalize(arr){let s=0;for(let i=0;i<arr.length;i++)s+=arr[i]*arr[i];s=Math.sqrt(s)||1;const o=new Float32Array(arr.length);for(let i=0;i<arr.length;i++)o[i]=arr[i]/s;return o;}
+function cosSim(a,b){let s=0;for(let i=0;i<a.length;i++)s+=a[i]*b[i];return s;}
+function maxSimToSession(v){let m=-1;for(const e of sessionEmb){const s=cosSim(v,e.n);if(s>m)m=s;}return m;}
+
+/* ---- 学習：押している間だけ、新しい角度を集める／十分で自動停止 ---- */
+function toggleCapture(){capturing?stopCapture(false):startCapture();}
+function startCapture(){
+  const name=$('nameInput').value.trim();
+  if(!name){flashHint('先に名前を入れてください');$('nameInput').focus();return;}
+  if(!featureModel)return;
+  captureName=name;captureFolder=$('folderSelect').value||null;
+  sessionEmb=[];redundantStreak=0;capturing=true;
+  $('captureBtn').textContent='撮影をとめる';$('captureBtn').classList.replace('btn-primary','btn-stop');
+  $('capBadge').classList.add('show');$('capProgress').classList.add('show');$('capGuide').classList.add('show');
+  const v=$('learnVideo');
+  captureTimer=setInterval(()=>{
+    if(!v.videoWidth)return;
+    let raw;
+    tf.tidy(()=>{const a=featureModel.infer(v,true);raw=a.dataSync().slice();});
+    const n=normalize(raw);
+    const maxSim = sessionEmb.length? maxSimToSession(n) : -1;
+    if(maxSim < SIM_NEW){ sessionEmb.push({raw,n}); redundantStreak=0; }
+    else { redundantStreak++; }
+    const got=sessionEmb.length;
+    const remaining=Math.max(0,MIN_SAMPLES-got);
+    $('capCount').textContent = remaining>0 ? '角度 '+got+'種（あと'+remaining+'）' : '角度 '+got+'種・十分';
+    $('capProgressBar').style.width=Math.min(100,Math.round(got/MIN_SAMPLES*100))+'%';
+    updateGuide(got,remaining);
+    // 自動停止：十分多様 かつ しばらく新しい角度が出ていない／または安全上限
+    if((got>=MIN_SAMPLES && redundantStreak>=REDUNDANT_STOP) || got>=HARD_CAP){
+      stopCapture(false);
+    }
+  },110);
+}
+function updateGuide(got,remaining){
+  const g=$('capGuide');let t;
+  if(remaining<=0){t='✓ 十分な角度が集まりました。止めてもOK';}
+  else if(redundantStreak>=8){t='同じ向きが続いています。回す・裏返す・角度を変えて';}
+  else{
+    const r=got/MIN_SAMPLES;
+    if(r<0.25)t='まず正面から、ゆっくり回してください';
+    else if(r<0.5)t='横向きにしてみましょう';
+    else if(r<0.75)t='縦向き・斜めからも見せて';
+    else t='裏返しや別の角度も撮りましょう';
+  }
+  g.textContent=t;
+}
+function stopCapture(silent){
+  if(!capturing)return;
+  capturing=false;clearInterval(captureTimer);captureTimer=null;
+  $('captureBtn').textContent='撮影して覚えさせる';$('captureBtn').classList.replace('btn-stop','btn-primary');
+  $('capBadge').classList.remove('show');$('capProgress').classList.remove('show');$('capGuide').classList.remove('show');
+  if(silent){sessionEmb=[];return;}                 // もどる等での強制停止
+  const got=sessionEmb.length;
+  if(got===0)return;
+  const enough = got>=MIN_SAMPLES;
+  const msg = (enough? '十分な角度が集まりました（'+got+'種）。':'まだ少なめです（'+got+'種）。')+'\n「'+captureName+'」として保存しますか？';
+  if(confirm(msg)){
+    commitSession();
+    alert('保存しました。');
+    if(confirm('分解手順の写真を、いま登録しますか？\n（あとでライブラリからでも登録できます）')){
+      openSteps(captureName,'learn');
+    }
+  }else{
+    sessionEmb=[];
+  }
+}
+function commitSession(){
+  // ここで初めて分類器に登録（保存しない選択なら何も残らない）
+  const dim=sessionEmb[0].raw.length;
+  sessionEmb.forEach(e=>{const t=tf.tensor(e.raw,[1,dim]);classifier.addExample(t,captureName);t.dispose();});
+  if(!meta.classes[captureName])meta.classes[captureName]={folder:captureFolder,steps:[],stepTexts:[]};
+  else meta.classes[captureName].folder=captureFolder;
+  sessionEmb=[];
+  saveStore();
+}
+function flashHint(m){const h=$('learnHint');const p=h.innerHTML;h.innerHTML='<b style="color:var(--amber)">'+escapeHtml(m)+'</b>';setTimeout(()=>h.innerHTML=p,1800);}
+
+/* ---- フォルダ ---- */
+function renderFolderSelect(){
+  const sel=$('folderSelect');const cur=sel.value;
+  sel.innerHTML='<option value="">（なし）</option>'+meta.folders.map(f=>`<option value="${safeAttr(f.id)}">${escapeHtml(f.name)}</option>`).join('');
+  if(cur&&meta.folders.some(f=>f.id===cur))sel.value=cur;
+}
+function newFolderFromLearn(){
+  const name=(prompt('新しいフォルダ名')||'').trim();if(!name)return;
+  const id='f'+Date.now();meta.folders.push({id,name});saveStore();renderFolderSelect();$('folderSelect').value=id;
+}
+function newFolder(){const name=(prompt('新しいフォルダ名')||'').trim();if(!name)return;meta.folders.push({id:'f'+Date.now(),name});saveStore();renderLibrary();}
+function renameFolder(id){const f=meta.folders.find(x=>x.id===id);if(!f)return;const name=(prompt('フォルダ名を変更',f.name)||'').trim();if(!name)return;f.name=name;saveStore();renderLibrary();}
+async function deleteFolder(id){
+  const f=meta.folders.find(x=>x.id===id);if(!f)return;
+  const members=Object.keys(meta.classes).filter(n=>meta.classes[n].folder===id);
+  const msg=members.length
+    ? 'フォルダ「'+f.name+'」と、中の器械 '+members.length+'個（学習データ・手順写真すべて）を削除します。\n元に戻せません。よろしいですか？'
+    : 'フォルダ「'+f.name+'」を削除します。よろしいですか？';
+  if(!confirm(msg))return;
+  for(const n of members){await removeClassFull(n);}   // 学習データ・画像も削除
+  meta.folders=meta.folders.filter(x=>x.id!==id);
+  await saveMeta();renderLibrary();
+}
+
+/* ---- 器械の改名・削除・移動 ---- */
+function renameClass(oldName){
+  const newName=(prompt('器械の名前を変更',oldName)||'').trim();
+  if(!newName||newName===oldName)return;
+  if(classifier.getClassExampleCount()[newName]){alert('同じ名前がすでにあります');return;}
+  const ds=classifier.getClassifierDataset();
+  if(ds[oldName]){ds[newName]=ds[oldName];delete ds[oldName];classifier.setClassifierDataset(ds);}
+  meta.classes[newName]=meta.classes[oldName]||{folder:null,steps:[]};delete meta.classes[oldName];
+  saveStore();renderLibrary();
+}
+async function deleteClass(name){
+  if(!confirm('「'+name+'」の学習データと手順を削除しますか？'))return;
+  const steps=(meta.classes[name]&&meta.classes[name].steps)||[];
+  for(const id of steps){await idbDel('images',id);delete imgCache[id];}
+  classifier.clearClass(name);delete meta.classes[name];
+  await saveMeta();renderLibrary();
+}
+function moveClass(name,folderId){const c=meta.classes[name]||{steps:[]};c.folder=folderId||null;meta.classes[name]=c;saveStore();renderLibrary();}
+
+function renderLibrary(){
+  const body=$('libBody');
+  const counts=classifier?classifier.getClassExampleCount():{};
+  const names=Object.keys(counts);
+  names.forEach(n=>{if(!meta.classes[n])meta.classes[n]={folder:null,steps:[],stepTexts:[]};normalizeClass(n);});
+  if(names.length===0&&meta.folders.length===0){body.innerHTML='<div class="empty">まだ器械が登録されていません。<br>「学習する」から器械を覚えさせてください。</div>';return;}
+  const folderOpts=f=>'<option value="">未分類</option>'+meta.folders.map(x=>`<option value="${x.id}" ${f===x.id?'selected':''}>${escapeHtml(x.name)}</option>`).join('');
+  const rowHtml=n=>{
+    const steps=(meta.classes[n].steps||[]).length;
+    return `<div class="crow"><span class="nm">${escapeHtml(n)}</span><span class="ct tnum">学習日：今日 / ${counts[n]}枚</span>${steps?`<span class="haspx">手順 ${steps}</span>`:''}<span class="act">
+      <select onchange="moveClass('${jsq(n)}',this.value)">${folderOpts(meta.classes[n].folder)}</select>
+      <button class="icobtn" title="手順" onclick="openSteps('${jsq(n)}','lib')">手順</button>
+      <button class="icobtn" title="改名" onclick="renameClass('${jsq(n)}')">編集</button>
+      <button class="icobtn del" title="削除" onclick="deleteClass('${jsq(n)}')">削除</button></span></div>`;
+  };
+  let html='';
+  meta.folders.forEach(f=>{
+    const members=names.filter(n=>meta.classes[n].folder===f.id);
+    html+=`<div class="folder"><div class="folder-head"><span class="fname">${escapeHtml(f.name)}</span><span class="fcount">${members.length}件</span><span class="fact"><button class="icobtn" title="改名" onclick="renameFolder('${f.id}')">編集</button><button class="icobtn del" title="削除" onclick="deleteFolder('${f.id}')">削除</button></span></div>`;
+    html+= members.length?members.map(rowHtml).join(''):'<div class="empty">このフォルダは空です。</div>';
+    html+='</div>';
+  });
+  const unfiled=names.filter(n=>!meta.classes[n].folder);
+  if(unfiled.length){html+=`<div class="folder"><div class="folder-head"><span class="fname">未分類</span><span class="fcount">${unfiled.length}件</span></div>`+unfiled.map(rowHtml).join('')+'</div>';}
+  body.innerHTML=html;
+}
+
+/* ---- 手順（写真）編集 ---- */
+let stepsBackTo='lib';
+async function openSteps(name,backTo){
+  stepsEditTarget=name;stepsBackTo=backTo||'lib';
+  if(!meta.classes[name])meta.classes[name]={folder:null,steps:[],stepTexts:[]};
+  normalizeClass(name);
+  $('stepsTitle').textContent='Disassembly Steps：'+name;
+  $('stepsBack').onclick=()=>{ stepsBackTo==='learn'?goLearn():goLibrary(); };
+  stopCamera();showScreen('steps');
+  await preloadImages(meta.classes[name].steps);
+  renderSteps();
+}
+function renderSteps(){
+  const c=meta.classes[stepsEditTarget];
+  const grid=$('stepGrid');
+  let html=c.steps.map((id,i)=>{
+    const src=imgCache[id]||('data:image/svg+xml;charset=UTF-8,'+encodeURIComponent(instrumentThumbSvg()));
+    const txt=escapeHtml(c.stepTexts[i]||'');
+    return `<div class="stepcard"><span class="lbl">${i+1}</span><div class="steptext"><span class="stepname">Step ${i+1}</span><input class="stepcap" type="text" placeholder="説明（任意）" value="${txt}" oninput="onStepText(${i},this.value)"></div><img src="${src}" alt="Step${i+1}"><button class="x" onclick="deleteStep(${i})">×</button></div>`;
+  }).join('');
+  html+=`<button class="addstep" onclick="addStep()">＋ 写真を追加</button>`;
+  grid.innerHTML=html;
+}
+let stepTextTimer=null;
+function onStepText(i,val){
+  meta.classes[stepsEditTarget].stepTexts[i]=val;
+  clearTimeout(stepTextTimer);
+  stepTextTimer=setTimeout(()=>saveMeta(),400);   // 入力が落ち着いたら保存
+}
+function addStep(){ $('stepFile').value='';$('stepFile').click(); }
+function onStepFile(ev){
+  const file=ev.target.files&&ev.target.files[0];if(!file)return;
+  compressImage(file,1024,0.72).then(async dataUrl=>{
+    const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+    try{
+      await idbPut('images',id,dataUrl);              // 写真は端末内DBへ
+    }catch(e){
+      console.error(e);
+      alert('写真を保存できませんでした。端末の空き容量を確認してください。');
+      return;
+    }
+    imgCache[id]=dataUrl;
+    meta.classes[stepsEditTarget].steps.push(id);
+    meta.classes[stepsEditTarget].stepTexts.push('');
+    await saveMeta();                                  // 参照（軽い情報）だけ保存
+    renderSteps();
+  }).catch(()=>alert('画像を読み込めませんでした。'));
+}
+async function deleteStep(i){
+  if(!confirm('Step'+(i+1)+'の写真を削除しますか？'))return;
+  const id=meta.classes[stepsEditTarget].steps.splice(i,1)[0];
+  meta.classes[stepsEditTarget].stepTexts.splice(i,1);
+  if(id){await idbDel('images',id);delete imgCache[id];}
+  await saveMeta();renderSteps();
+}
+
+/* 画像を縮小してJPEG化（端末内保存を軽くする） */
+function compressImage(file,maxSide,quality){
+  return new Promise((resolve,reject)=>{
+    const img=new Image();const url=URL.createObjectURL(file);
+    img.onload=()=>{
+      let{width:w,height:h}=img;
+      if(w>h&&w>maxSide){h=Math.round(h*maxSide/w);w=maxSide;}
+      else if(h>=w&&h>maxSide){w=Math.round(w*maxSide/h);h=maxSide;}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      URL.revokeObjectURL(url);
+      resolve(c.toDataURL('image/jpeg',quality));
+    };
+    img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('img'));};
+    img.src=url;
+  });
+}
+
+/* ---- スライド表示 ---- */
+async function openSlides(name){
+  const steps=(meta.classes[name]&&meta.classes[name].steps)||[];
+  slideName=name;slideIdx=0;captionHidden=false;
+  $('slideTitle').textContent=name;
+  const m=$('slideModal');m.classList.add('show');
+  if(steps.length===0){
+    $('slideStepNo').textContent='';
+    $('slideStage').innerHTML='<div class="empty-steps">この器械にはまだ分解手順が登録されていません。<br>ライブラリから写真を追加できます。</div>';
+    $('slideCaption').classList.remove('show');
+    $('slideNav').style.display='none';
+    return;
+  }
+  $('slideStage').innerHTML='<div class="empty-steps">読み込み中…</div>';
+  $('slideNav').style.display='flex';
+  await preloadImages(steps);
+  renderSlide();
+}
+let captionHidden=false;
+function renderSlide(){
+  const c=meta.classes[slideName];const steps=c.steps;
+  $('slideStepNo').textContent='Step '+(slideIdx+1)+' / '+steps.length;
+  $('slideStage').innerHTML='<img src="'+safeAttr(imgCache[steps[slideIdx]]||'')+'" alt="Step'+(slideIdx+1)+'">';
+  const txt=(c.stepTexts&&c.stepTexts[slideIdx])||'';
+  const cap=$('slideCaption');
+  if(txt && !captionHidden){cap.innerHTML=escapeHtml(txt)+'<span class="tap">写真をタップで説明を隠す</span>';cap.classList.add('show');}
+  else if(txt && captionHidden){cap.classList.remove('show');}
+  else{cap.classList.remove('show');}
+  $('slidePrev').disabled=slideIdx===0;
+  $('slideNext').textContent=slideIdx===steps.length-1?'おわり':'次 ›';
+}
+function toggleCaption(){
+  const c=meta.classes[slideName];const txt=(c&&c.stepTexts&&c.stepTexts[slideIdx])||'';
+  if(!txt)return;                       // 説明が無い写真ではトグルしない
+  captionHidden=!captionHidden;renderSlide();
+}
+function slideMove(d){
+  const steps=meta.classes[slideName].steps;
+  if(slideIdx===steps.length-1&&d>0){closeSlides();return;}
+  slideIdx=Math.max(0,Math.min(steps.length-1,slideIdx+d));renderSlide();
+}
+function closeSlides(){$('slideModal').classList.remove('show');}
+
+/* スライドを左右スワイプで送る */
+(function(){
+  let sx=0,sy=0,tracking=false;
+  const stage=()=>document.getElementById('slideStage');
+  document.addEventListener('touchstart',e=>{
+    const st=stage();if(!st||!document.getElementById('slideModal').classList.contains('show'))return;
+    if(!st.contains(e.target))return;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;
+  },{passive:true});
+  document.addEventListener('touchend',e=>{
+    if(!tracking)return;tracking=false;
+    const dx=e.changedTouches[0].clientX-sx, dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>50 && Math.abs(dx)>Math.abs(dy)*1.5){
+      if(dx<0) slideMove(1);   // 左スワイプ→次
+      else slideMove(-1);      // 右スワイプ→前
+    }
+  },{passive:true});
+})();
+
+/* ---- 判別 ---- */
+function resetPredictUI(){
+  frozen=false;stableName=null;stableCount=0;
+  $('predict').classList.remove('result-ready');
+  $('verdict').className='verdict idle';$('verdict').textContent='器械を枠に映してください';
+  $('ranks').innerHTML='';$('predictActions').style.display='none';$('predictTapHint').style.display='none';
+  $('predBadge').classList.remove('show');$('frozenBadge').classList.remove('show');
+}
+function startPredictLoop(){
+  stopPredictLoop();frozen=false;
+  $('predBadge').classList.add('show');$('frozenBadge').classList.remove('show');$('predictActions').style.display='none';$('predictTapHint').style.display='none';
+  const v=$('predictVideo');if(v.paused)v.play().catch(()=>{});
+  const loop=async(t)=>{
+    predictRAF=requestAnimationFrame(loop);
+    if(frozen||predictBusy)return;
+    if(t-lastT<200)return;lastT=t;
+    if(!v.videoWidth)return;
+    predictBusy=true;
+    try{
+      const a=featureModel.infer(v,true);
+      const arr=a.dataSync().slice();
+      const res=await classifier.predictClass(a,5);
+      a.dispose();
+      const sim=maxSimToIndex(normalize(arr));   // 一番近い学習例との「近さ」
+      handlePrediction(res,sim);
+    }catch(e){}
+    predictBusy=false;
+  };
+  predictRAF=requestAnimationFrame(loop);
+}
+function stopPredictLoop(){if(predictRAF){cancelAnimationFrame(predictRAF);predictRAF=null;}predictBusy=false;}
+function topList(conf){return Object.keys(conf).sort((a,b)=>conf[b]-conf[a]);}
+function handlePrediction(res,sim){
+  const conf=res.confidences;const order=topList(conf);const top=order[0],topVal=conf[top];
+  // どの学習例にも十分近くない＝「該当なし」（背景だけ等で勝手に断定しない）
+  if(sim!==undefined && sim<simGate){
+    stableName=null;stableCount=0;
+    $('ranks').innerHTML='';
+    $('verdict').className='verdict idle';$('verdict').textContent='該当なし（器械を枠に映してください）';
+    return;
+  }
+  renderRanks(order,conf,false);
+  if(topVal>=threshold){
+    if(top===stableName)stableCount++;else{stableName=top;stableCount=1;}
+    if(stableCount>=3){freezeResult(order,conf);return;}
+    $('verdict').className='verdict';$('verdict').textContent='これは「'+top+'」です';
+  }else{stableName=null;stableCount=0;$('verdict').className='verdict waiting';$('verdict').textContent='もう少しはっきり映してください';}
+}
+function freezeResult(order,conf){
+  frozen=true;stopPredictLoop();
+  const v=$('predictVideo');v.pause();
+  $('predict').classList.add('result-ready');
+  $('predBadge').classList.remove('show');$('frozenBadge').classList.add('show');
+  $('verdict').className='verdict';$('verdict').textContent='この器械は…';
+  renderRanks(order,conf,true);
+  $('predictActions').style.display='block';$('predictTapHint').style.display='block';
+}
+function renderRanks(order,conf,final){
+  const top3=order.slice(0,3);
+  $('ranks').innerHTML=top3.map((n,i)=>{
+    const p=Math.round(conf[n]*100);
+    const steps=(meta.classes[n]&&meta.classes[n].steps&&meta.classes[n].steps.length)||0;
+    const tappable=final;
+    const go=final?(steps?'›':'手順なし'):'';
+    const label=i===0&&final?'この器械は…':'';
+    return `<button class="rank ${i===0?'first':''} ${tappable?'tappable':''}" ${tappable?`onclick="openSlides('${jsq(n)}')"`:'disabled style="opacity:1"'}>
+      <div class="no">${i+1}</div><div class="body">
+      ${label?`<div class="verdict-label" style="text-align:left;margin-bottom:3px">${label}</div>`:''}
+      <div class="top"><span class="rname">${escapeHtml(n)}</span><span class="rpct tnum">類似度：${p}%</span></div>
+      <div class="bar"><i style="width:${p}%"></i></div></div>
+      ${go?`<span class="go ${steps?'':'none'}">${go}</span>`:''}</button>`;
+  }).join('');
+}
+function restartPredict(){
+  resetPredictUI();
+  const v=$('predictVideo');
+  if(!stream){startCamera(v,$('predictMsg'),$('predictMsgText')).then(ok=>{if(ok)startPredictLoop();});}
+  else{v.play().catch(()=>{});startPredictLoop();}
+}
+function onThresh(v){threshold=v/100;$('threshVal').textContent=v+'%';}
+function onGate(v){simGate=v/100;const n=+v;$('gateVal').textContent=n<=20?'弱':n<=40?'やや弱':n<=55?'中':n<=70?'やや強':'強';}
+
+/* ---- 端末内 保存・復元（IndexedDBへ。容量が大きく写真も入る） ---- */
+async function saveMeta(){
+  try{
+    await idbPut('kv','meta',meta);
+    if(classifier){
+      const d=classifier.getClassifierDataset();const ds={};
+      Object.keys(d).forEach(k=>{ds[k]={data:Array.from(d[k].dataSync()),shape:d[k].shape};});
+      await idbPut('kv','dataset',ds);
+    }
+    renderHomeRecent();
+    return true;
+  }catch(e){console.warn('保存失敗',e);alert('保存できませんでした。端末の空き容量を確認してください。');return false;}
+}
+function saveStore(){return saveMeta();}   /* 後方互換 */
+
+async function loadStore(){
+  try{
+    let m=null,ds=null;
+    try{m=await idbGet('kv','meta');ds=await idbGet('kv','dataset');}catch(e){}
+    if(!m){ await migrateOld(); try{m=await idbGet('kv','meta');ds=await idbGet('kv','dataset');}catch(e){} }
+    if(m){meta=m;if(!meta.folders)meta.folders=[];if(!meta.classes)meta.classes={};Object.keys(meta.classes).forEach(n=>normalizeClass(n));}
+    if(ds&&classifier){const d={};Object.keys(ds).forEach(k=>{d[k]=tf.tensor(ds[k].data,ds[k].shape);});if(Object.keys(d).length)classifier.setClassifierDataset(d);}
+    renderHomeRecent();
+  }catch(e){console.warn('読み込み失敗',e);}
+}
+
+/* 旧データ（localStorage）があればIndexedDBへ移す */
+async function migrateOld(){
+  try{
+    const v3=localStorage.getItem('kikai_v3');
+    if(v3){
+      const o=JSON.parse(v3);const m=o.meta||{folders:[],classes:{}};
+      for(const n of Object.keys(m.classes||{})){
+        const c=m.classes[n];c.steps=c.steps||[];const ns=[];
+        for(const s of c.steps){
+          if(typeof s==='string'&&s.startsWith('data:')){const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);try{await idbPut('images',id,s);ns.push(id);}catch(e){}}
+          else ns.push(s);
+        }
+        c.steps=ns;
+      }
+      await idbPut('kv','meta',m);if(o.ds)await idbPut('kv','dataset',o.ds);
+      try{localStorage.removeItem('kikai_v3');}catch(e){}
+      return;
+    }
+    const v2=localStorage.getItem('kikai_v2');
+    if(v2){const o=JSON.parse(v2);const classes={};if(o.meta&&o.meta.classes)Object.keys(o.meta.classes).forEach(n=>{classes[n]={folder:o.meta.classes[n].folder||null,steps:[]};});await idbPut('kv','meta',{folders:(o.meta&&o.meta.folders)||[],classes});if(o.ds)await idbPut('kv','dataset',o.ds);return;}
+    const v1=localStorage.getItem('kikai_step1_knn_v1');
+    if(v1){const od=JSON.parse(v1);const ds={},classes={};Object.keys(od).forEach(n=>{ds[n]={data:od[n].data,shape:od[n].shape};classes[n]={folder:null,steps:[]};});if(Object.keys(ds).length){await idbPut('kv','meta',{folders:[],classes});await idbPut('kv','dataset',ds);}}
+  }catch(e){console.warn('引き継ぎ失敗',e);}
+}
+
+/* ---- 書き出し（範囲を選ぶ） ---- */
+function openExportPanel(){
+  const counts=classifier?classifier.getClassExampleCount():{};
+  const names=Object.keys(counts);
+  if(names.length===0&&meta.folders.length===0){alert('書き出すデータがありません。');return;}
+  let html=`<label class="epitem"><input type="checkbox" id="ep_all" checked onchange="onExportAllToggle()"><b>全部（おすすめ）</b><span class="epc">${names.length}件</span></label>`;
+  html+=`<div class="ep-divider">― または、フォルダを選ぶ ―</div>`;
+  meta.folders.forEach(f=>{
+    const c=names.filter(n=>meta.classes[n].folder===f.id).length;
+    html+=`<label class="epitem"><input type="checkbox" class="ep_f" value="${safeAttr(f.id)}" onchange="onExportPick()"><span>${escapeHtml(f.name)}</span><span class="epc">${c}件</span></label>`;
+  });
+  const unfiled=names.filter(n=>!meta.classes[n].folder).length;
+  if(unfiled)html+=`<label class="epitem"><input type="checkbox" class="ep_f" value="__unfiled__" onchange="onExportPick()"><span>未分類</span><span class="epc">${unfiled}件</span></label>`;
+  $('exportList').innerHTML=html;
+  $('exportPanel').style.display='block';
+}
+function closeExportPanel(){$('exportPanel').style.display='none';}
+function onExportAllToggle(){
+  if($('ep_all').checked){document.querySelectorAll('.ep_f').forEach(c=>c.checked=false);}
+}
+function onExportPick(){
+  const any=[...document.querySelectorAll('.ep_f')].some(c=>c.checked);
+  $('ep_all').checked=!any;   // フォルダを選んだら「全部」を外す／全部外したら「全部」に戻す
+}
+async function exportSelected(){
+  const counts=classifier?classifier.getClassExampleCount():{};
+  const names=Object.keys(counts);
+  const all=$('ep_all').checked;
+  let payload;
+  if(all){
+    payload=await buildPayload(names,meta.folders.map(f=>f.id),true);
+    payload.scope='all';
+  }else{
+    const picked=[...document.querySelectorAll('.ep_f')].filter(c=>c.checked).map(c=>c.value);
+    if(picked.length===0){alert('フォルダを選ぶか、「全部」を選んでください。');return;}
+    const wantUnfiled=picked.includes('__unfiled__');
+    const folderIds=picked.filter(v=>v!=='__unfiled__');
+    const selNames=names.filter(n=>{const f=meta.classes[n].folder;return (f&&folderIds.includes(f))||(!f&&wantUnfiled);});
+    payload=await buildPayload(selNames,folderIds,wantUnfiled);
+    payload.scope='folders';
+  }
+  closeExportPanel();
+  downloadPayload(payload);
+}
+async function buildPayload(names,folderIds,includeUnfiled){
+  const classes={},dataset={},images={};
+  const d=classifier?classifier.getClassifierDataset():{};
+  for(const n of names){
+    const c=meta.classes[n];
+    classes[n]={folder:c.folder||null,steps:(c.steps||[]).slice(),stepTexts:(c.stepTexts||[]).slice()};
+    if(d[n])dataset[n]={data:Array.from(d[n].dataSync()),shape:d[n].shape};
+    for(const id of (c.steps||[])){if(!images[id]){try{const v=await idbGet('images',id);if(v)images[id]=v;}catch(e){}}}
+  }
+  const folders=meta.folders.filter(f=>folderIds.includes(f.id)).map(f=>({id:f.id,name:f.name}));
+  return {app:'kikai',version:3,exportedAt:new Date().toISOString(),meta:{folders,classes},dataset,images};
+}
+function downloadPayload(payload){
+  try{
+    const json=JSON.stringify(payload);
+    const tag=payload.scope==='all'?'all':'part';
+    const fname='kikai-'+tag+'-'+new Date().toISOString().slice(0,10)+'.json';
+    const blob=new Blob([json],{type:'application/json'});
+    const file=new File([blob],fname,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      navigator.share({files:[file],title:fname}).catch(e=>{if(!(e&&e.name==='AbortError'))fallbackDownload(blob,fname);});
+      return;
+    }
+    fallbackDownload(blob,fname);
+  }catch(e){console.error(e);alert('書き出しに失敗しました。');}
+}
+function fallbackDownload(blob,fname){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);}
+
+/* ---- 読み込み（全置き換え／フォルダ差し替え） ---- */
+function onImportFile(ev){
+  const file=ev.target.files&&ev.target.files[0];ev.target.value='';if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async()=>{
+    let payload;
+    try{payload=JSON.parse(reader.result);}catch(e){alert('このファイルは読み込めません（形式が違います）。');return;}
+    if(!payload||payload.app!=='kikai'||!payload.meta){alert('このアプリのバックアップファイルではないようです。');return;}
+    const cls=payload.meta.classes?Object.keys(payload.meta.classes).length:0;
+    const fol=payload.meta.folders?payload.meta.folders.length:0;
+    if(payload.scope==='folders'){
+      if(!confirm('フォルダ '+fol+'件・器械'+cls+'件 を読み込みます。\n同じ名前のフォルダは中身を差し替え、他のフォルダはそのまま残します。\nよろしいですか？'))return;
+      await importPartial(payload);
+    }else{
+      if(!confirm('今のデータ（フォルダ・器械・手順）はすべて置き換わります。\n読み込むと フォルダ'+fol+'件・器械'+cls+'件 がセットされます。\nよろしいですか？'))return;
+      await importReplace(payload);
+    }
+  };
+  reader.onerror=()=>alert('ファイルを読み込めませんでした。');
+  reader.readAsText(file);
+}
+async function removeClassFull(n){
+  const st=(meta.classes[n]&&meta.classes[n].steps)||[];
+  for(const id of st){await idbDel('images',id);delete imgCache[id];}
+  if(classifier){try{classifier.clearClass(n);}catch(e){}}
+  delete meta.classes[n];
+}
+async function importReplace(payload){
+  try{
+    await clearImages();imgCache={};
+    if(payload.images){for(const id of Object.keys(payload.images)){try{await idbPut('images',id,payload.images[id]);}catch(e){}}}
+    meta=payload.meta;if(!meta.folders)meta.folders=[];if(!meta.classes)meta.classes={};
+    Object.keys(meta.classes).forEach(n=>normalizeClass(n));
+    if(classifier){
+      if(payload.dataset&&Object.keys(payload.dataset).length){
+        const ds={};Object.keys(payload.dataset).forEach(k=>{ds[k]=tf.tensor(payload.dataset[k].data,payload.dataset[k].shape);});
+        classifier.setClassifierDataset(ds);
+      }else{classifier.clearAllClasses();}
+    }
+    await saveMeta();alert('読み込みました。');renderLibrary();
+  }catch(e){console.error(e);alert('読み込みに失敗しました。');}
+}
+async function importPartial(payload){
+  try{
+    const sub=payload.meta;const pidToName={};(sub.folders||[]).forEach(f=>pidToName[f.id]=f.name);
+    const nameToLocalId={};
+    // 同名フォルダは中身ごと差し替え／無ければ追加
+    for(const f of (sub.folders||[])){
+      const ex=meta.folders.find(x=>x.name===f.name);
+      if(ex){
+        const members=Object.keys(meta.classes).filter(n=>meta.classes[n].folder===ex.id);
+        for(const n of members){await removeClassFull(n);}
+        meta.folders=meta.folders.filter(x=>x.id!==ex.id);
+      }
+      const nid='f'+Date.now()+Math.random().toString(36).slice(2,5);
+      meta.folders.push({id:nid,name:f.name});nameToLocalId[f.name]=nid;
+    }
+    // 器械を入れる（既存同名は置き換え）
+    for(const n of Object.keys(sub.classes||{})){
+      const cls=sub.classes[n];
+      let folderLocal=null;
+      if(cls.folder!=null&&pidToName[cls.folder]!=null)folderLocal=nameToLocalId[pidToName[cls.folder]];
+      if(meta.classes[n])await removeClassFull(n);
+      if(payload.images){for(const id of (cls.steps||[])){if(payload.images[id]){try{await idbPut('images',id,payload.images[id]);}catch(e){}}}}
+      if(payload.dataset&&payload.dataset[n]&&classifier){
+        const cur=classifier.getClassifierDataset();
+        cur[n]=tf.tensor(payload.dataset[n].data,payload.dataset[n].shape);
+        classifier.setClassifierDataset(cur);
+      }
+      meta.classes[n]={folder:folderLocal,steps:(cls.steps||[]).slice(),stepTexts:(cls.stepTexts||[]).slice()};
+      normalizeClass(n);
+    }
+    await saveMeta();alert('読み込みました。');renderLibrary();
+  }catch(e){console.error(e);alert('読み込みに失敗しました。');}
+}
+
+
+function instrumentThumbSvg(){
+  return `<svg viewBox="0 0 90 56" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 39 66 15" stroke="#727a7d" stroke-width="4" stroke-linecap="round"/><circle cx="17" cy="39" r="9" stroke="#727a7d" stroke-width="4"/><circle cx="67" cy="15" r="9" stroke="#727a7d" stroke-width="4"/><path d="M42 35h31" stroke="#adb2b3" stroke-width="5" stroke-linecap="round"/></svg>`;
+}
+function renderHomeRecent(){
+  const el=document.getElementById('homeRecent');
+  if(!el)return;
+  const counts=classifier?classifier.getClassExampleCount():{};
+  const names=Object.keys(counts).slice(-3).reverse();
+  if(!names.length){
+    el.innerHTML='<div class="empty-recent">まだ登録がありません。<br>「学習する」から器械を覚えさせましょう。</div>';
+    return;
+  }
+  el.innerHTML=names.map(n=>{
+    const c=meta.classes[n]||{};
+    const stepCount=(c.steps||[]).length;
+    return `<div class="recent-row"><div class="recent-thumb">${instrumentThumbSvg()}</div><div><strong>${escapeHtml(n)}</strong><span>${counts[n]}枚で学習・手順${stepCount}件</span></div><em class="done-pill">完了</em></div>`;
+  }).join('');
+}
+
+
+function showSafetyNote(){
+  alert('このアプリは端末内保存です。カメラ映像や判別中の写真は保存せず、登録した手順写真と学習データもこの端末内に保存されます。');
+}
+/* ---- 小物（入力の安全化：表示前にHTMLエスケープ） ---- */
+function normalizeClass(n){
+  const c=meta.classes[n]||{};
+  if(!c.steps)c.steps=[];
+  if(!c.stepTexts)c.stepTexts=[];
+  while(c.stepTexts.length<c.steps.length)c.stepTexts.push('');
+  if(c.stepTexts.length>c.steps.length)c.stepTexts.length=c.steps.length;
+  if(c.folder===undefined)c.folder=null;
+  meta.classes[n]=c;
+  return c;
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function safeAttr(s){return escapeHtml(s).replace(/\n/g,'&#10;').replace(/\r/g,'&#13;');}
+function jsq(s){
+  return String(s)
+    .replace(/\\/g,'\\\\')
+    .replace(/'/g,"\\'")
+    .replace(/\n/g,'\\n')
+    .replace(/\r/g,'\\r')
+    .replace(/\u2028/g,'\\u2028')
+    .replace(/\u2029/g,'\\u2029')
+    .replace(/&/g,'&amp;')
+    .replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopCapture(true);stopPredictLoop();}});
+/* キーボードを閉じた／入力欄から離れたらカメラを再開（フリーズ対策） */
+['nameInput','folderSelect'].forEach(id=>{const el=document.getElementById(id);if(el){el.addEventListener('blur',()=>setTimeout(resumeLearnCam,150));el.addEventListener('change',()=>setTimeout(resumeLearnCam,150));}});
+$('learnVideo').addEventListener('click',resumeLearnCam);
+document.addEventListener('DOMContentLoaded',()=>{try{renderHomeRecent();}catch(e){}});
+window.addEventListener('focusout',()=>{const s=document.getElementById('learn');if(s&&s.classList.contains('active'))setTimeout(resumeLearnCam,150);});
+</script>
+</body>
+</html>
