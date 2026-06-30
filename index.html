@@ -65,7 +65,7 @@ header.bar{display:none}
 .tile h2{margin:0;font-size:17px;font-weight:950;letter-spacing:-.03em;color:#253038}
 .tile small{display:block;color:#4f5c63;font-size:11px;font-weight:700;line-height:1.55;max-width:124px}
 .tile .chev{position:absolute;right:12px;bottom:12px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;border:1px solid currentColor;font-size:18px;line-height:1;background:#fff;font-weight:800}
-.tile-camera .ico,.tile-camera .chev{color:var(--mint)}.tile-book .ico,.tile-book .chev{color:#f2b900;background:var(--yellow-soft)}.tile-folder .ico,.tile-folder .chev{color:var(--blue);background:var(--blue-soft)}.tile-pencil .ico,.tile-pencil .chev{color:var(--pink);background:var(--pink-soft)}
+.tile-camera .ico,.tile-camera .chev{color:var(--mint)}.tile-book .ico,.tile-book .chev{color:#f2b900;background:var(--yellow-soft)}.tile-folder .ico,.tile-folder .chev{color:var(--blue);background:var(--blue-soft)}.tile-pencil .ico,.tile-pencil .chev{color:var(--pink);background:var(--pink-soft)}.tile-search .ico,.tile-search .chev{color:var(--pink);background:var(--pink-soft)}
 .tile-camera{background:linear-gradient(180deg,#fff,#fcfffe)}.tile-book{background:linear-gradient(180deg,#fff,#fffefa)}
 .recent-panel{border:1px solid var(--line);border-radius:20px;background:#fff;box-shadow:var(--soft-shadow);padding:12px;margin-bottom:10px}
 .recent-head{display:flex;align-items:center;margin-bottom:8px}.recent-head b{font-size:14px;font-weight:950;color:#313a40}.recent-head button{margin-left:auto;appearance:none;border:none;background:transparent;color:var(--mint-dark);font-size:11px;font-weight:900;cursor:pointer}
@@ -114,7 +114,7 @@ header.bar{display:none}
 .notice{border:1px solid var(--line);border-radius:18px;background:#f8fcfb;padding:11px 12px;color:#65747b;font-size:11.5px;line-height:1.7;margin:0 0 10px}.notice b{color:var(--mint-dark)}
 .safe-mini{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 10px}.safe-mini div{background:#f2fbf8;border:1px solid #def2ec;color:#526369;border-radius:15px;padding:10px;font-size:11px;font-weight:800;line-height:1.45}.safe-mini b{display:block;color:var(--mint-dark);margin-bottom:2px}
 .foot-note{font-size:10.5px;color:#94a2a8;text-align:center;margin-top:auto;padding:4px 0 10px}
-.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(9px + env(safe-area-inset-bottom));width:calc(min(100%,392px) - 22px);display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:7px 6px;border-radius:25px;background:rgba(255,255,255,.97);border:1px solid var(--line);box-shadow:0 13px 32px rgba(62,108,124,.16);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:40}
+.bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(9px + env(safe-area-inset-bottom));width:calc(min(100%,392px) - 22px);display:grid;grid-template-columns:repeat(4,1fr);gap:2px;padding:7px 6px;border-radius:25px;background:rgba(255,255,255,.97);border:1px solid var(--line);box-shadow:0 13px 32px rgba(62,108,124,.16);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:40}
 @media (min-width:700px){.bottom-nav{width:calc(min(100%,392px) - 22px)}}
 .bottom-nav button{appearance:none;border:none;background:transparent;border-radius:18px;display:flex;flex-direction:column;align-items:center;gap:3px;color:#717f87;font-size:9.5px;font-weight:900;padding:7px 2px;cursor:pointer}
 .bottom-nav button.active{background:#e6f7f3;color:var(--mint-dark)}.bottom-nav svg{width:20px;height:20px}
@@ -201,13 +201,14 @@ header.bar{display:none}
       <button class="tile tile-camera" onclick="goPredict()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17l3-5h12l3 5h5a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V21a4 4 0 0 1 4-4h5Z"/><circle cx="24" cy="28" r="8"/></svg></span><h2>判別する</h2><small>カメラで器械を写して<br>名前を調べます</small><span class="chev">›</span></button>
       <button class="tile tile-book" onclick="goLearn()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11h13a7 7 0 0 1 7 7v23a8 8 0 0 0-7-4H8V11Z"/><path d="M40 11H27a7 7 0 0 0-7 7v23a8 8 0 0 1 7-4h13V11Z"/></svg></span><h2>学習する</h2><small>器械の分解手順を<br>学習・記録します</small><span class="chev">›</span></button>
       <button class="tile tile-folder" onclick="goLibrary()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15a5 5 0 0 1 5-5h9l5 5h14a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V15Z"/></svg></span><h2>整理棚</h2><small>学習した器械や手順を<br>一覧で確認できます</small><span class="chev">›</span></button>
+      <button class="tile tile-search" onclick="goSearch()"><span class="ico"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="13"/><path d="m31 31 9 9"/></svg></span><h2>検索する</h2><small>器械名から写真や<br>手順をすぐ確認</small><span class="chev">›</span></button>
     </div>
     <div class="recent-panel"><div class="recent-head"><b>最近の学習</b><button onclick="goLibrary()">すべて見る ›</button></div><div class="recent-list" id="homeRecent"></div></div>
   </section>
 
   <!-- LEARN -->
   <section id="learn" class="screen learn-screen">
-    <div class="appbar"><button class="nav-icon" onclick="goHome()" aria-label="戻る"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>学習する</strong><button class="nav-icon" onclick="showSafetyNote()" aria-label="ヘルプ"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M19 19a5 5 0 1 1 8 4c-2 1.4-3 2.4-3 5"/><path d="M24 35h.01"/></svg></button></div>
+    <div class="appbar"><button class="nav-icon" onclick="goHome()" aria-label="戻る"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>学習する</strong><button class="nav-icon" onclick="learnHelp()" aria-label="ヘルプ"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M19 19a5 5 0 1 1 8 4c-2 1.4-3 2.4-3 5"/><path d="M24 35h.01"/></svg></button></div>
     <div class="stepper"><span class="active"><i>1</i>名前</span><span><i>2</i>撮影</span><span><i>3</i>手順の追加</span><span><i>4</i>保存</span></div>
     <div class="row2">
       <div class="field" style="flex:1"><label for="nameInput">器械の名前</label><input id="nameInput" type="text" placeholder="例：器械名を入力" autocomplete="off"></div>
@@ -250,12 +251,12 @@ header.bar{display:none}
     <p class="hint" style="text-align:left;margin:0 2px 8px">写真を順番に追加します。並んだ順に Step1, Step2 … になります。後から差し替え・削除できます。</p>
     <div class="stepgrid" id="stepGrid"></div>
     <input type="file" id="stepFile" accept="image/*" style="display:none" onchange="onStepFile(event)">
-    <div style="margin-top:14px"><button class="btn btn-ghost" onclick="goLibrary()">整理棚にもどる</button></div>
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:10px"><button class="btn btn-primary" onclick="saveStepsDone()">保存する</button><button class="btn btn-ghost" id="stepsBackBtn">もどる</button></div>
   </section>
 
   <!-- PREDICT -->
   <section id="predict" class="screen predict-screen">
-    <div class="appbar"><button class="nav-icon" onclick="goHome()" aria-label="戻る"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>判別する</strong><button class="nav-icon" onclick="showSafetyNote()" aria-label="ヘルプ"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M19 19a5 5 0 1 1 8 4c-2 1.4-3 2.4-3 5"/><path d="M24 35h.01"/></svg></button></div>
+    <div class="appbar"><button class="nav-icon" onclick="goHome()" aria-label="戻る"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M30 10 16 24l14 14"/></svg></button><strong>判別する</strong><button class="nav-icon" onclick="predictHelp()" aria-label="ヘルプ"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="M19 19a5 5 0 1 1 8 4c-2 1.4-3 2.4-3 5"/><path d="M24 35h.01"/></svg></button></div>
     <div class="stepper"><span class="active"><i>1</i>映す</span><span class="active"><i>2</i>候補を見る</span><span><i>3</i>タップで手順</span></div>
     <div class="viewport">
       <video id="predictVideo" autoplay playsinline muted></video>
@@ -288,9 +289,8 @@ header.bar{display:none}
   <nav class="bottom-nav" id="globalNav" aria-label="下部メニュー">
     <button data-nav="home" onclick="goHome()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 23 24 9l17 14"/><path d="M12 21v20h9V29h6v12h9V21"/></svg><span>ホーム</span></button>
     <button data-nav="learn" onclick="goLearn()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11h13a7 7 0 0 1 7 7v23a8 8 0 0 0-7-4H8V11Z"/><path d="M40 11H27a7 7 0 0 0-7 7v23a8 8 0 0 1 7-4h13V11Z"/></svg><span>学習</span></button>
-    <button data-nav="predict" onclick="goPredict()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="12"/><path d="m31 31 10 10"/></svg><span>判別</span></button>
+    <button data-nav="predict" onclick="goPredict()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 17l3-5h12l3 5h5a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V21a4 4 0 0 1 4-4h5Z"/><circle cx="24" cy="28" r="7.5"/></svg><span>判別</span></button>
     <button data-nav="library" onclick="goLibrary()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 15a5 5 0 0 1 5-5h9l5 5h14a5 5 0 0 1 5 5v15a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V15Z"/></svg><span>整理棚</span></button>
-    <button data-nav="search" onclick="goSearch()"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="21" cy="21" r="13"/><path d="m31 31 9 9"/></svg><span>検索</span></button>
   </nav>
 </div>
 
@@ -814,10 +814,27 @@ async function openSteps(name,backTo){
   if(!meta.classes[name])meta.classes[name]={folder:null,steps:[],stepTexts:[]};
   normalizeClass(name);
   $('stepsTitle').textContent='分解手順：'+name;
-  $('stepsBack').onclick=()=>{ stepsBackTo==='learn'?goLearn():goLibrary(); };
+  $('stepsBack').onclick=()=>{ stepsBackTo==='learn'?goLibrary():goLibrary(); };
+  $('stepsBackBtn').onclick=()=>{ goLibrary(); };
   stopCamera();showScreen('steps');
   await preloadImages(meta.classes[name].steps);
   renderSteps();
+}
+/* 手順登録の「保存する」：保存済みであることを伝え、次の器械へ誘導 */
+async function saveStepsDone(){
+  try{await saveMeta();}catch(e){}
+  const name=stepsEditTarget;
+  if(stepsBackTo==='learn'){
+    // 学習の流れ：続けて次の器械を登録するか聞く
+    if(confirm('「'+name+'」を保存しました。\n続けて別の器械を登録しますか？\n（キャンセルで整理棚を確認します）')){
+      goLearn();   // 名称欄は空でスタート
+    }else{
+      goLibrary();
+    }
+  }else{
+    alert('「'+name+'」の手順を保存しました。');
+    goLibrary();
+  }
 }
 function renderSteps(){
   const c=meta.classes[stepsEditTarget];
@@ -1242,6 +1259,30 @@ async function renderHomeRecent(){
 
 function showSafetyNote(){
   alert('このアプリは端末内保存です。カメラ映像や判別中の写真は保存せず、登録した手順写真と学習データもこの端末内に保存されます。');
+}
+function learnHelp(){
+  alert(
+    '【学習する】の使い方\n\n'+
+    '1. 器械の名前を入れます（例：コッヘル）。\n'+
+    '2. 必要ならフォルダを選びます。\n'+
+    '3.「撮影して覚えさせる」を押し、器械を枠に映したまま、ゆっくり回します。\n'+
+    '   正面 → 横 → 縦・斜め → 裏返し と、いろいろな向きを見せると精度が上がります。\n'+
+    '4.「十分な角度が集まりました」と出たら指を離すと、保存を確認します。\n'+
+    '5. 続けて分解手順の写真も登録できます。\n\n'+
+    'コツ：実際に判別で使う場所・背景で覚えさせると、認識が安定します。\n'+
+    '同じ器械をあとから強くしたいときは、整理棚の「追加学習」が使えます。'
+  );
+}
+function predictHelp(){
+  alert(
+    '【判別する】の使い方\n\n'+
+    '1. 器械を枠の中央に映します。\n'+
+    '2. 下に候補が「類似度％」付きで出続けます。映す向きを変えると候補が絞れます。\n'+
+    '3. 正しいと思う候補をタップすると、その器械の分解手順が開きます。\n'+
+    '4. 手順を閉じると、そのまま次の判別に戻れます。\n\n'+
+    '設定：「確定ライン」は候補として扱う基準。「厳しさ」を上げると、学習した器械に近くないものを“該当なし”として弾きます。\n\n'+
+    '注意：これは学習用です。最終確認は必ず人が行ってください。'
+  );
 }
 /* ---- 小物（入力の安全化：表示前にHTMLエスケープ） ---- */
 function normalizeClass(n){
