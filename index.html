@@ -317,7 +317,22 @@ let stableName=null, stableCount=0, frozen=false;
 let meta={folders:[],classes:{}};  // classes[name]={folder, steps:[imageId,...]}
 let stepsEditTarget=null;          // 手順編集中の器械名
 let slideName=null, slideIdx=0;
-let imgCache={};                   // imageId -> dataURL（表示用キャッシュ）
+let imgCache={};                   // imageId -> 表示用URL（Blobはobject URL、旧データはbase64文字列）
+/* ---- 画像はバイナリ(Blob)で端末内保存。表示はobject URL、書き出し時のみbase64に変換 ---- */
+function toDisplayURL(v){ return (v instanceof Blob) ? URL.createObjectURL(v) : v; }  // 旧base64文字列もそのまま表示可
+function dropCache(id){ const u=imgCache[id]; if(typeof u==='string'&&u.indexOf('blob:')===0){try{URL.revokeObjectURL(u);}catch(e){}} delete imgCache[id]; }
+function blobToDataURL(blob){ return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(blob);}); }
+function dataURLtoBlob(durl){
+  try{
+    const i=durl.indexOf(','); const head=durl.slice(0,i); const b64=durl.slice(i+1);
+    const mime=(head.match(/data:(.*?);/)||[])[1]||'image/jpeg';
+    const bin=atob(b64); const u8=new Uint8Array(bin.length);
+    for(let k=0;k<bin.length;k++)u8[k]=bin.charCodeAt(k);
+    return new Blob([u8],{type:mime});
+  }catch(e){ return null; }
+}
+async function imageToDataURL(v){ return (v instanceof Blob) ? await blobToDataURL(v) : v; }   // 書き出し用：Blobでも旧文字列でもbase64に
+function storeImageValue(v){ return (typeof v==='string'&&v.startsWith('data:')) ? (dataURLtoBlob(v)||v) : v; } // 読み込み用：base64をBlobに
 
 /* ====== プライバシーガード：モデル読み込み後の外部通信を止める ====== */
 const TRUSTED_NETWORK_HOSTS=new Set(['cdn.jsdelivr.net','unpkg.com','storage.googleapis.com','tfhub.dev','www.gstatic.com','www.kaggle.com']);
@@ -392,7 +407,7 @@ async function db(){if(_db)return _db;_db=await openDB();return _db;}
 function idbPut(store,key,val){return new Promise((res,rej)=>{db().then(d=>{const tx=d.transaction(store,'readwrite');tx.objectStore(store).put(val,key);tx.oncomplete=()=>res(true);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error||new Error('abort'));}).catch(rej);});}
 function idbGet(store,key){return new Promise((res,rej)=>{db().then(d=>{const tx=d.transaction(store,'readonly');const r=tx.objectStore(store).get(key);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}).catch(rej);});}
 function idbDel(store,key){return new Promise((res)=>{db().then(d=>{const tx=d.transaction(store,'readwrite');tx.objectStore(store).delete(key);tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}).catch(()=>res(false));});}
-async function preloadImages(ids){for(const id of ids){if(imgCache[id])continue;try{const v=await idbGet('images',id);if(v)imgCache[id]=v;}catch(e){}}}
+async function preloadImages(ids){for(const id of ids){if(imgCache[id])continue;try{const v=await idbGet('images',id);if(v)imgCache[id]=toDisplayURL(v);}catch(e){}}}
 function clearImages(){return new Promise((res)=>{db().then(d=>{const tx=d.transaction('images','readwrite');tx.objectStore('images').clear();tx.oncomplete=()=>res(true);tx.onerror=()=>res(false);}).catch(()=>res(false));});}
 
 const $=id=>document.getElementById(id);
@@ -712,7 +727,7 @@ function renameClass(oldName){
 async function deleteClass(name){
   if(!confirm('「'+name+'」の学習データと手順を削除しますか？'))return;
   const steps=(meta.classes[name]&&meta.classes[name].steps)||[];
-  for(const id of steps){await idbDel('images',id);delete imgCache[id];}
+  for(const id of steps){await idbDel('images',id);dropCache(id);}
   classifier.clearClass(name);delete meta.classes[name];
   await saveMeta();renderLibrary();
 }
@@ -794,13 +809,13 @@ function setCover(name){
   inp.onchange=async e=>{
     const f=e.target.files&&e.target.files[0];if(!f)return;
     try{
-      const dataUrl=await compressImage(f,512,0.7);
+      const blob=await compressImage(f,512,0.7);
       const old=meta.classes[name].cover;
       const id='cov_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-      await idbPut('images',id,dataUrl);imgCache[id]=dataUrl;
+      await idbPut('images',id,blob);imgCache[id]=toDisplayURL(blob);
       meta.classes[name].cover=id;
       await saveMeta();
-      if(old){try{await idbDel('images',old);delete imgCache[old];}catch(_){}}
+      if(old){try{await idbDel('images',old);dropCache(old);}catch(_){}}
       renderLibrary();
     }catch(err){console.error(err);alert('写真を保存できませんでした。端末の空き容量を確認してください。');}
   };
@@ -856,16 +871,16 @@ function onStepText(i,val){
 function addStep(){ $('stepFile').value='';$('stepFile').click(); }
 function onStepFile(ev){
   const file=ev.target.files&&ev.target.files[0];if(!file)return;
-  compressImage(file,1024,0.72).then(async dataUrl=>{
+  compressImage(file,1024,0.72).then(async blob=>{
     const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
     try{
-      await idbPut('images',id,dataUrl);              // 写真は端末内DBへ
+      await idbPut('images',id,blob);                 // 写真はバイナリで端末内DBへ
     }catch(e){
       console.error(e);
       alert('写真を保存できませんでした。端末の空き容量を確認してください。');
       return;
     }
-    imgCache[id]=dataUrl;
+    imgCache[id]=toDisplayURL(blob);
     meta.classes[stepsEditTarget].steps.push(id);
     meta.classes[stepsEditTarget].stepTexts.push('');
     await saveMeta();                                  // 参照（軽い情報）だけ保存
@@ -876,7 +891,7 @@ async function deleteStep(i){
   if(!confirm('Step'+(i+1)+'の写真を削除しますか？'))return;
   const id=meta.classes[stepsEditTarget].steps.splice(i,1)[0];
   meta.classes[stepsEditTarget].stepTexts.splice(i,1);
-  if(id){await idbDel('images',id);delete imgCache[id];}
+  if(id){await idbDel('images',id);dropCache(id);}
   await saveMeta();renderSteps();
 }
 
@@ -891,7 +906,7 @@ function compressImage(file,maxSide,quality){
       const c=document.createElement('canvas');c.width=w;c.height=h;
       c.getContext('2d').drawImage(img,0,0,w,h);
       URL.revokeObjectURL(url);
-      resolve(c.toDataURL('image/jpeg',quality));
+      c.toBlob(b=>{ b?resolve(b):reject(new Error('blob')); },'image/jpeg',quality);
     };
     img.onerror=()=>{URL.revokeObjectURL(url);reject(new Error('img'));};
     img.src=url;
@@ -1069,7 +1084,7 @@ async function migrateOld(){
       for(const n of Object.keys(m.classes||{})){
         const c=m.classes[n];c.steps=c.steps||[];const ns=[];
         for(const s of c.steps){
-          if(typeof s==='string'&&s.startsWith('data:')){const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);try{await idbPut('images',id,s);ns.push(id);}catch(e){}}
+          if(typeof s==='string'&&s.startsWith('data:')){const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);try{await idbPut('images',id,storeImageValue(s));ns.push(id);}catch(e){}}
           else ns.push(s);
         }
         c.steps=ns;
@@ -1136,7 +1151,7 @@ async function buildPayload(names,folderIds,includeUnfiled){
     const c=meta.classes[n];
     classes[n]={folder:c.folder||null,steps:(c.steps||[]).slice(),stepTexts:(c.stepTexts||[]).slice()};
     if(d[n])dataset[n]={data:Array.from(d[n].dataSync()),shape:d[n].shape};
-    for(const id of (c.steps||[])){if(!images[id]){try{const v=await idbGet('images',id);if(v)images[id]=v;}catch(e){}}}
+    for(const id of (c.steps||[])){if(!images[id]){try{const v=await idbGet('images',id);if(v)images[id]=await imageToDataURL(v);}catch(e){}}}
   }
   const folders=meta.folders.filter(f=>folderIds.includes(f.id)).map(f=>({id:f.id,name:f.name}));
   return {app:'kikai',version:3,exportedAt:new Date().toISOString(),meta:{folders,classes},dataset,images};
@@ -1188,14 +1203,14 @@ function onImportFile(ev){
 }
 async function removeClassFull(n){
   const st=(meta.classes[n]&&meta.classes[n].steps)||[];
-  for(const id of st){await idbDel('images',id);delete imgCache[id];}
+  for(const id of st){await idbDel('images',id);dropCache(id);}
   if(classifier){try{classifier.clearClass(n);}catch(e){}}
   delete meta.classes[n];
 }
 async function importReplace(payload){
   try{
     await clearImages();imgCache={};
-    if(payload.images){for(const id of Object.keys(payload.images)){try{await idbPut('images',id,payload.images[id]);}catch(e){}}}
+    if(payload.images){for(const id of Object.keys(payload.images)){try{await idbPut('images',id,storeImageValue(payload.images[id]));}catch(e){}}}
     meta=payload.meta;if(!meta.folders)meta.folders=[];if(!meta.classes)meta.classes={};
     Object.keys(meta.classes).forEach(n=>normalizeClass(n));
     if(classifier){
@@ -1228,7 +1243,7 @@ async function importPartial(payload){
       let folderLocal=null;
       if(cls.folder!=null&&pidToName[cls.folder]!=null)folderLocal=nameToLocalId[pidToName[cls.folder]];
       if(meta.classes[n])await removeClassFull(n);
-      if(payload.images){for(const id of (cls.steps||[])){if(payload.images[id]){try{await idbPut('images',id,payload.images[id]);}catch(e){}}}}
+      if(payload.images){for(const id of (cls.steps||[])){if(payload.images[id]){try{await idbPut('images',id,storeImageValue(payload.images[id]));}catch(e){}}}}
       if(payload.dataset&&payload.dataset[n]&&classifier){
         const cur=classifier.getClassifierDataset();
         cur[n]=tf.tensor(payload.dataset[n].data,payload.dataset[n].shape);
