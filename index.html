@@ -236,7 +236,7 @@ header.bar{display:none}
     <div class="security-strip"><i><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="21" width="28" height="20" rx="5"/><path d="M16 21v-7a8 8 0 0 1 16 0v7"/><path d="M24 29v5"/></svg></i><div><b>すべてのデータは端末内に保存されます</b>外部に送信されることはありません。</div></div>
     <div class="sec-title">バックアップ・配布</div>
     <p class="hint" style="text-align:left;margin:0 2px 10px">全データを1ファイルに書き出して保存・配布できます。別端末で読み込むと、その端末の内容は置き換わります。</p>
-    <div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="openExportPanel()">書き出し</button><button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">読み込み</button></div>
+    <div style="display:flex;gap:10px"><button class="btn btn-ghost" onclick="openExportPanel()">書き出し</button><button class="btn btn-ghost" onclick="startImport()">読み込み</button></div>
     <div id="exportPanel" class="exportpanel" style="display:none"><div class="ep-title">書き出す範囲を選ぶ</div><div id="exportList"></div><div style="display:flex;gap:10px;margin-top:12px"><button class="btn btn-ghost btn-sm" onclick="closeExportPanel()">やめる</button><button class="btn btn-primary btn-sm" onclick="exportSelected()">この内容で書き出し</button></div></div>
     <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="onImportFile(event)">
     <div class="sec-title" style="margin-top:18px">データの初期化</div>
@@ -1158,6 +1158,14 @@ function downloadPayload(payload){
 function fallbackDownload(blob,fname){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);}
 
 /* ---- 読み込み（全置き換え／フォルダ差し替え） ---- */
+function startImport(){
+  if(!featureModel||!classifier){
+    alert('読み込みの前に、AIの準備が必要です。\n\nお手数ですが、いったん「学習」を開いてAIモデルの読み込みが終わるのを待ってから、もう一度この「読み込み」を押してください。\n（フォルダだけが入って器械が入らないのを防ぐためです）');
+    try{ensureModel(null,null);}catch(e){}   // 裏で準備を始めておく（次は待ち時間が短くなる）
+    return;
+  }
+  document.getElementById('importFile').click();
+}
 function onImportFile(ev){
   const file=ev.target.files&&ev.target.files[0];ev.target.value='';if(!file)return;
   const reader=new FileReader();
