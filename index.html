@@ -317,22 +317,31 @@ let stableName=null, stableCount=0, frozen=false;
 let meta={folders:[],classes:{}};  // classes[name]={folder, steps:[imageId,...]}
 let stepsEditTarget=null;          // 手順編集中の器械名
 let slideName=null, slideIdx=0;
-let imgCache={};                   // imageId -> 表示用URL（Blobはobject URL、旧データはbase64文字列）
-/* ---- 画像はバイナリ(Blob)で端末内保存。表示はobject URL、書き出し時のみbase64に変換 ---- */
-function toDisplayURL(v){ return (v instanceof Blob) ? URL.createObjectURL(v) : v; }  // 旧base64文字列もそのまま表示可
+let imgCache={};                   // imageId -> 表示用URL（バイナリはobject URL、旧データはbase64文字列）
+/* ---- 画像はバイナリ(ArrayBuffer)で端末内保存。iOS SafariはBlob直接保存に不具合があるためArrayBufferを使う。
+       表示はobject URL、書き出し時のみbase64に変換 ---- */
+function bufToBlob(v){ return new Blob([v],{type:'image/jpeg'}); }
+function toDisplayURL(v){
+  if(v instanceof ArrayBuffer) return URL.createObjectURL(bufToBlob(v));
+  if(v instanceof Blob) return URL.createObjectURL(v);
+  return v;  // 旧base64文字列はそのまま表示可
+}
 function dropCache(id){ const u=imgCache[id]; if(typeof u==='string'&&u.indexOf('blob:')===0){try{URL.revokeObjectURL(u);}catch(e){}} delete imgCache[id]; }
 function blobToDataURL(blob){ return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(blob);}); }
-function dataURLtoBlob(durl){
+function dataURLtoBuf(durl){
   try{
-    const i=durl.indexOf(','); const head=durl.slice(0,i); const b64=durl.slice(i+1);
-    const mime=(head.match(/data:(.*?);/)||[])[1]||'image/jpeg';
+    const i=durl.indexOf(','); const b64=durl.slice(i+1);
     const bin=atob(b64); const u8=new Uint8Array(bin.length);
     for(let k=0;k<bin.length;k++)u8[k]=bin.charCodeAt(k);
-    return new Blob([u8],{type:mime});
+    return u8.buffer;
   }catch(e){ return null; }
 }
-async function imageToDataURL(v){ return (v instanceof Blob) ? await blobToDataURL(v) : v; }   // 書き出し用：Blobでも旧文字列でもbase64に
-function storeImageValue(v){ return (typeof v==='string'&&v.startsWith('data:')) ? (dataURLtoBlob(v)||v) : v; } // 読み込み用：base64をBlobに
+async function imageToDataURL(v){
+  if(v instanceof ArrayBuffer) return await blobToDataURL(bufToBlob(v));
+  if(v instanceof Blob) return await blobToDataURL(v);
+  return v;   // 旧文字列はそのまま
+}
+function storeImageValue(v){ return (typeof v==='string'&&v.startsWith('data:')) ? (dataURLtoBuf(v)||v) : v; } // 読み込み用：base64をバイナリに
 
 /* ====== プライバシーガード：モデル読み込み後の外部通信を止める ====== */
 const TRUSTED_NETWORK_HOSTS=new Set(['cdn.jsdelivr.net','unpkg.com','storage.googleapis.com','tfhub.dev','www.gstatic.com','www.kaggle.com']);
@@ -810,9 +819,10 @@ function setCover(name){
     const f=e.target.files&&e.target.files[0];if(!f)return;
     try{
       const blob=await compressImage(f,512,0.7);
+      const buf=await blob.arrayBuffer();
       const old=meta.classes[name].cover;
       const id='cov_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-      await idbPut('images',id,blob);imgCache[id]=toDisplayURL(blob);
+      await idbPut('images',id,buf);imgCache[id]=toDisplayURL(buf);
       meta.classes[name].cover=id;
       await saveMeta();
       if(old){try{await idbDel('images',old);dropCache(old);}catch(_){}}
@@ -872,19 +882,28 @@ function addStep(){ $('stepFile').value='';$('stepFile').click(); }
 function onStepFile(ev){
   const file=ev.target.files&&ev.target.files[0];if(!file)return;
   compressImage(file,1024,0.72).then(async blob=>{
+    const buf=await blob.arrayBuffer();
     const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
     try{
-      await idbPut('images',id,blob);                 // 写真はバイナリで端末内DBへ
+      await idbPut('images',id,buf);                  // 写真はバイナリで端末内DBへ
     }catch(e){
       console.error(e);
-      alert('写真を保存できませんでした。端末の空き容量を確認してください。');
+      alert('写真を保存できませんでした。もう一度お試しください。（続く場合は端末の空き容量もご確認ください）');
       return;
     }
-    imgCache[id]=toDisplayURL(blob);
+    imgCache[id]=toDisplayURL(buf);
     meta.classes[stepsEditTarget].steps.push(id);
     meta.classes[stepsEditTarget].stepTexts.push('');
     await saveMeta();                                  // 参照（軽い情報）だけ保存
     renderSteps();
+    // 写真の説明テキストを入力するか確認（不要ならキャンセル）
+    const stepNo=meta.classes[stepsEditTarget].steps.length;
+    const txt=prompt('Step'+stepNo+' の説明を入力しますか？\n（不要な場合はキャンセル）','');
+    if(txt!==null&&txt.trim()){
+      meta.classes[stepsEditTarget].stepTexts[stepNo-1]=txt.trim();
+      await saveMeta();
+      renderSteps();
+    }
   }).catch(()=>alert('画像を読み込めませんでした。'));
 }
 async function deleteStep(i){
